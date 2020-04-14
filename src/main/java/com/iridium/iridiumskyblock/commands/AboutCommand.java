@@ -3,6 +3,8 @@ package com.iridium.iridiumskyblock.commands;
 import com.iridium.iridiumskyblock.IridiumSkyblock;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
 import java.util.List;
@@ -14,14 +16,15 @@ public class AboutCommand extends Command {
     }
 
     @Override
-    public void execute(CommandSender sender, String[] args) {
+    public void execute(@NotNull CommandSender sender, @NotNull String[] args) {
         sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&8Plugin Name: &7IridiumSkyblock"));
         sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&8Plugin Version: &7" + IridiumSkyblock.getInstance().getDescription().getVersion()));
         sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&8Coded by IridiumLLC"));
     }
 
     @Override
-    public List<String> TabComplete(CommandSender cs, org.bukkit.command.Command cmd, String s, String[] args) {
+    public @Nullable List<String> TabComplete(@NotNull CommandSender cs, @NotNull org.bukkit.command.Command cmd, @NotNull String s, @NotNull String[] args) {
         return null;
     }
+
 }

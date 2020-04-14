@@ -2,6 +2,7 @@ package com.iridium.iridiumskyblock.iterators;
 
 import com.iridium.iridiumskyblock.Direction;
 import com.iridium.iridiumskyblock.IridiumSkyblock;
+import com.iridium.iridiumskyblock.configs.Config;
 import lombok.Getter;
 import org.bukkit.Location;
 import org.jetbrains.annotations.NotNull;
@@ -9,14 +10,15 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Iterator;
 
 public class IslandLocationIterator implements Iterator<Location> {
-    private final int distance = IridiumSkyblock.getConfiguration().distance;
+    @NotNull private final Config config = IridiumSkyblock.getConfiguration();
+    private final int distance = config.distance;
 
     @Getter @NotNull private final Location location;
-    @Getter private Direction direction;
+    @Getter @NotNull private Direction direction;
     @Getter private int countInDirection;
     @Getter private int maxInDirection;
 
-    public IslandLocationIterator(@NotNull Location location, Direction direction, int countInDirection, int maxInDirection) {
+    public IslandLocationIterator(@NotNull Location location, @NotNull Direction direction, int countInDirection, int maxInDirection) {
         this.location = location;
         this.direction = direction;
         this.countInDirection = countInDirection;
@@ -29,7 +31,7 @@ public class IslandLocationIterator implements Iterator<Location> {
     }
 
     @Override
-    public Location next() {
+    @NotNull public Location next() {
         switch (direction) {
             case NORTH:
                 location.add(distance, 0, 0);

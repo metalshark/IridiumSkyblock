@@ -17,6 +17,8 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.material.Crops;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Map;
@@ -24,28 +26,28 @@ import java.util.Map;
 public class BlockBreakListener implements Listener {
 
     @EventHandler
-    public void onBlockBreak(BlockBreakEvent event) {
+    public void onBlockBreak(@NotNull BlockBreakEvent event) {
         try {
             if (event.isCancelled()) return;
-            final Block block = event.getBlock();
-            final Location location = block.getLocation();
-            final IslandManager islandManager = IridiumSkyblock.getIslandManager();
-            final Island island = islandManager.getIslandViaLocation(location);
+            @NotNull final Block block = event.getBlock();
+            @NotNull final Location location = block.getLocation();
+            @NotNull final IslandManager islandManager = IridiumSkyblock.getIslandManager();
+            @Nullable final Island island = islandManager.getIslandViaLocation(location);
             if (island == null) return;
 
-            final Player player = event.getPlayer();
-            final User user = User.getUser(player);
+            @NotNull final Player player = event.getPlayer();
+            @NotNull final User user = User.getUser(player);
 
             if (user.islandID == island.getId()) {
-                for (Missions.Mission mission : IridiumSkyblock.getMissions().missions) {
+                for (@NotNull Missions.Mission mission : IridiumSkyblock.getMissions().missions) {
                     final int key = island.getMissionLevels().computeIfAbsent(mission.name, (name) -> 1);
-                    final Map<Integer, Missions.MissionData> levels = mission.levels;
-                    final Missions.MissionData level = levels.get(key);
+                    @NotNull final Map<Integer, Missions.MissionData> levels = mission.levels;
+                    @NotNull final Missions.MissionData level = levels.get(key);
 
                     if (level == null) continue;
                     if (level.type != MissionType.BLOCK_BREAK) continue;
 
-                    final List<String> conditions = level.conditions;
+                    @NotNull final List<String> conditions = level.conditions;
 
                     if (
                         conditions.isEmpty()
@@ -70,17 +72,17 @@ public class BlockBreakListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onMonitorBreakBlock(BlockBreakEvent event) {
+    public void onMonitorBreakBlock(@NotNull BlockBreakEvent event) {
         try {
-            final Block block = event.getBlock();
-            final Location location = block.getLocation();
-            final IslandManager islandManager = IridiumSkyblock.getIslandManager();
-            final Island island = islandManager.getIslandViaLocation(location);
+            @NotNull final Block block = event.getBlock();
+            @NotNull final Location location = block.getLocation();
+            @NotNull final IslandManager islandManager = IridiumSkyblock.getIslandManager();
+            @Nullable final Island island = islandManager.getIslandViaLocation(location);
             if (island == null) return;
 
             if (Utils.isBlockValuable(block)) {
-                final Material material = block.getType();
-                final String materialName = XMaterial.matchXMaterial(material).name();
+                @NotNull final Material material = block.getType();
+                @NotNull final String materialName = XMaterial.matchXMaterial(material).name();
                 island.valuableBlocks.computeIfPresent(materialName, (name, original) -> original - 1);
                 if (island.updating)
                     island.tempValues.remove(location);
@@ -92,4 +94,5 @@ public class BlockBreakListener implements Listener {
             IridiumSkyblock.getInstance().sendErrorMessage(e);
         }
     }
+
 }

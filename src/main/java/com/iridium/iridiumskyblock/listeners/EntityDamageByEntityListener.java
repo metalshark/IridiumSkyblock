@@ -15,6 +15,8 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.vehicle.VehicleDamageEvent;
 import org.bukkit.projectiles.ProjectileSource;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
 import java.util.function.Supplier;
@@ -22,27 +24,28 @@ import java.util.function.Supplier;
 public class EntityDamageByEntityListener implements Listener {
 
     @EventHandler
-    public void onEntityDamageByEntity(EntityDamageByEntityEvent event) {
+    @SuppressWarnings("UnnecessaryReturnStatement")
+    public void onEntityDamageByEntity(@NotNull EntityDamageByEntityEvent event) {
         try {
-            final Entity damagee = event.getEntity();
-            final Location damageeLocation = damagee.getLocation();
-            final IslandManager islandManager = IridiumSkyblock.getIslandManager();
-            final Island island = islandManager.getIslandViaLocation(damageeLocation);
+            @NotNull final Entity damagee = event.getEntity();
+            @NotNull final Location damageeLocation = damagee.getLocation();
+            @NotNull final IslandManager islandManager = IridiumSkyblock.getIslandManager();
+            @Nullable final Island island = islandManager.getIslandViaLocation(damageeLocation);
             if (island == null) return;
 
-            final Entity damager = event.getDamager();
+            @NotNull final Entity damager = event.getDamager();
 
             // Using suppliers to defer work if unnecessary
             // This includes seemingly innocuous downcast operations
-            final Supplier<Player> damageePlayerSupplier = () -> (Player) damagee;
-            final Supplier<User> damageeUserSupplier = () -> User.getUser(damageePlayerSupplier.get());
-            final Supplier<Island> damageeIslandSupplier = () -> damageeUserSupplier.get().getIsland();
-            final Supplier<Arrow> arrowSupplier = () -> (Arrow) damager;
-            final Supplier<ProjectileSource> projectileSourceSupplier = () -> arrowSupplier.get().getShooter();
-            final Supplier<Player> shooterSupplier = () -> (Player) projectileSourceSupplier.get();
-            final Supplier<User> shootingUserSupplier = () -> User.getUser(Objects.requireNonNull(shooterSupplier.get()));
-            final Supplier<Player> damagingPlayerSupplier = () -> (Player) damager;
-            final Supplier<User> damagingUserSupplier = () -> User.getUser(damagingPlayerSupplier.get());
+            @NotNull final Supplier<Player> damageePlayerSupplier = () -> (Player) damagee;
+            @NotNull final Supplier<User> damageeUserSupplier = () -> User.getUser(damageePlayerSupplier.get());
+            @NotNull final Supplier<Island> damageeIslandSupplier = () -> damageeUserSupplier.get().getIsland();
+            @NotNull final Supplier<Arrow> arrowSupplier = () -> (Arrow) damager;
+            @NotNull final Supplier<ProjectileSource> projectileSourceSupplier = () -> arrowSupplier.get().getShooter();
+            @NotNull final Supplier<Player> shooterSupplier = () -> (Player) projectileSourceSupplier.get();
+            @NotNull final Supplier<User> shootingUserSupplier = () -> User.getUser(Objects.requireNonNull(shooterSupplier.get()));
+            @NotNull final Supplier<Player> damagingPlayerSupplier = () -> (Player) damager;
+            @NotNull final Supplier<User> damagingUserSupplier = () -> User.getUser(damagingPlayerSupplier.get());
 
             // Deals with two players pvping in IridiumSkyblock world
             if (IridiumSkyblock.getConfiguration().disablePvPOnIslands
@@ -119,19 +122,19 @@ public class EntityDamageByEntityListener implements Listener {
     }
 
     @EventHandler
-    public void onVehicleDamage(VehicleDamageEvent event) {
+    public void onVehicleDamage(@NotNull VehicleDamageEvent event) {
         try {
-            final Vehicle vehicle = event.getVehicle();
-            final Location location = vehicle.getLocation();
-            final IslandManager islandManager = IridiumSkyblock.getIslandManager();
-            final Island island = islandManager.getIslandViaLocation(location);
+            @NotNull final Vehicle vehicle = event.getVehicle();
+            @NotNull final Location location = vehicle.getLocation();
+            @NotNull final IslandManager islandManager = IridiumSkyblock.getIslandManager();
+            @Nullable final Island island = islandManager.getIslandViaLocation(location);
             if (island == null) return;
 
-            final Entity attacker = event.getAttacker();
+            @Nullable final Entity attacker = event.getAttacker();
             if (!(attacker instanceof Player)) return;
 
-            final Player attackerPlayer = (Player) attacker;
-            final User attackerUser = User.getUser(attackerPlayer);
+            @NotNull final Player attackerPlayer = (Player) attacker;
+            @NotNull final User attackerUser = User.getUser(attackerPlayer);
 
             if (!island.getPermissions(attackerUser).killMobs)
                 event.setCancelled(true);
@@ -139,4 +142,5 @@ public class EntityDamageByEntityListener implements Listener {
             IridiumSkyblock.getInstance().sendErrorMessage(ex);
         }
     }
+
 }

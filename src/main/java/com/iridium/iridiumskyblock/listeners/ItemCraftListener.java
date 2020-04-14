@@ -7,16 +7,17 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.PrepareItemCraftEvent;
 import org.bukkit.inventory.CraftingInventory;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.NotNull;
 
 public class ItemCraftListener implements Listener {
 
     @EventHandler
-    public void onItemCraft(PrepareItemCraftEvent event) {
+    public void onItemCraft(@NotNull PrepareItemCraftEvent event) {
         try {
-            final CraftingInventory inventory = event.getInventory();
+            @NotNull final CraftingInventory inventory = event.getInventory();
             if (inventory.getResult() == null) return;
 
-            for (ItemStack itemStack : inventory.getContents()) {
+            for (@NotNull ItemStack itemStack : inventory.getContents()) {
                 if (!Utils.makeItemHidden(IridiumSkyblock.getInventories().crystal).isSimilar(itemStack)) continue;
                 inventory.setResult(null);
                 return;

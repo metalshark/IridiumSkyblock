@@ -9,14 +9,16 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class CommandManager implements CommandExecutor, TabCompleter {
-    public List<com.iridium.iridiumskyblock.commands.Command> commands = new ArrayList<>();
+    @NotNull public List<com.iridium.iridiumskyblock.commands.Command> commands = new ArrayList<>();
 
-    public CommandManager(String command) {
+    public CommandManager(@NotNull String command) {
         IridiumSkyblock.getInstance().getCommand(command).setExecutor(this);
         IridiumSkyblock.getInstance().getCommand(command).setTabCompleter(this);
     }
@@ -69,16 +71,16 @@ public class CommandManager implements CommandExecutor, TabCompleter {
         registerCommand(IridiumSkyblock.getCommands().languagesCommand);
     }
 
-    public void registerCommand(com.iridium.iridiumskyblock.commands.Command command) {
+    public void registerCommand(@NotNull com.iridium.iridiumskyblock.commands.Command command) {
         commands.add(command);
     }
 
-    public void unRegisterCommand(com.iridium.iridiumskyblock.commands.Command command) {
+    public void unRegisterCommand(@NotNull com.iridium.iridiumskyblock.commands.Command command) {
         commands.remove(command);
     }
 
     @Override
-    public boolean onCommand(CommandSender cs, Command cmd, String s, String[] args) {
+    public boolean onCommand(@NotNull CommandSender cs, @NotNull Command cmd, @NotNull String s, @NotNull String[] args) {
         try {
             if (args.length != 0) {
                 for (com.iridium.iridiumskyblock.commands.Command command : commands) {
@@ -140,7 +142,7 @@ public class CommandManager implements CommandExecutor, TabCompleter {
     }
 
     @Override
-    public List<String> onTabComplete(CommandSender cs, Command cmd, String s, String[] args) {
+    public @Nullable List<String> onTabComplete(@NotNull CommandSender cs, @NotNull Command cmd, @NotNull String s, @NotNull String[] args) {
         try {
             if (args.length == 1) {
                 ArrayList<String> result = new ArrayList<>();

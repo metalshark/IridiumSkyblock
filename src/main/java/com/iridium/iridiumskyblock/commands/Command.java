@@ -15,7 +15,7 @@ public abstract class Command {
     @Getter private final boolean player;
     @Getter private final boolean enabled = true;
 
-    public abstract void execute(CommandSender sender, String[] args);
+    public abstract void execute(@NotNull CommandSender sender, @NotNull String[] args);
 
-    public abstract List<String> TabComplete(CommandSender cs, org.bukkit.command.Command cmd, String s, String[] args);
+    public abstract List<String> TabComplete(@NotNull CommandSender cs, @NotNull org.bukkit.command.Command cmd, @NotNull String s, @NotNull String[] args);
 }

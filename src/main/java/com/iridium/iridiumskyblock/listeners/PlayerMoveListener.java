@@ -17,41 +17,43 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.plugin.PluginManager;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class PlayerMoveListener implements Listener {
 
     @EventHandler
-    public void onPlayerMove(PlayerMoveEvent event) {
+    public void onPlayerMove(@NotNull PlayerMoveEvent event) {
         try {
-            final Player player = event.getPlayer();
-            final Location location = player.getLocation();
-            final IslandManager islandManager = IridiumSkyblock.getIslandManager();
+            @NotNull final Player player = event.getPlayer();
+            @NotNull final Location location = player.getLocation();
+            @NotNull final IslandManager islandManager = IridiumSkyblock.getIslandManager();
             if (!islandManager.isIslandWorld(location)) return;
 
-            final Config config = IridiumSkyblock.getConfiguration();
+            @NotNull final Config config = IridiumSkyblock.getConfiguration();
 
             if (location.getY() < 0 && config.voidTeleport) {
-                final Island island = islandManager.getIslandViaLocation(location);
-                final World world = location.getWorld();
+                @Nullable final Island island = islandManager.getIslandViaLocation(location);
+                @Nullable final World world = location.getWorld();
                 if (world == null) return;
 
                 if (island != null) {
-                    if (world.getName().equals(islandManager.getWorld().getName()))
+                    if (world.getName().equals(config.worldName))
                         island.teleportHome(player);
                     else
                         island.teleportNetherHome(player);
                 } else {
-                    final User user = User.getUser(player);
+                    @NotNull final User user = User.getUser(player);
                     if (user.getIsland() != null) {
-                        if (world.getName().equals(islandManager.getWorld().getName()))
+                        if (world.getName().equals(config.worldName))
                             user.getIsland().teleportHome(player);
-                        else if (world.getName().equals(islandManager.getNetherWorld().getName()))
+                        else if (world.getName().equals(config.netherWorldName))
                             user.getIsland().teleportNetherHome(player);
                     } else if (islandManager.isIslandWorld(world)) {
                         if (Bukkit.getPluginManager().isPluginEnabled("EssentialsSpawn")) {
-                            final PluginManager pluginManager = Bukkit.getPluginManager();
-                            final EssentialsSpawn essentialsSpawn = (EssentialsSpawn) pluginManager.getPlugin("EssentialsSpawn");
-                            final Essentials essentials = (Essentials) pluginManager.getPlugin("Essentials");
+                            @NotNull final PluginManager pluginManager = Bukkit.getPluginManager();
+                            @Nullable final EssentialsSpawn essentialsSpawn = (EssentialsSpawn) pluginManager.getPlugin("EssentialsSpawn");
+                            @Nullable final Essentials essentials = (Essentials) pluginManager.getPlugin("Essentials");
                             if (essentials != null && essentialsSpawn != null)
                                 player.teleport(essentialsSpawn.getSpawn(essentials.getUser(player).getGroup()));
                         } else
@@ -60,8 +62,8 @@ public class PlayerMoveListener implements Listener {
                 }
             }
 
-            final User user = User.getUser(player);
-            final Island island = user.getIsland();
+            @NotNull final User user = User.getUser(player);
+            @NotNull final Island island = user.getIsland();
             if (island == null) return;
 
             if (user.flying

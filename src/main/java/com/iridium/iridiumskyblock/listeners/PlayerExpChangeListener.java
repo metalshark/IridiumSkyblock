@@ -13,28 +13,29 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerExpChangeEvent;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
 
 public class PlayerExpChangeListener implements Listener {
 
     @EventHandler
-    public void onPlayerExpChange(PlayerExpChangeEvent event) {
+    public void onPlayerExpChange(@NotNull PlayerExpChangeEvent event) {
         try {
-            final Player player = event.getPlayer();
-            final Location location = player.getLocation();
-            final IslandManager islandManager = IridiumSkyblock.getIslandManager();
+            @NotNull final Player player = event.getPlayer();
+            @NotNull final Location location = player.getLocation();
+            @NotNull final IslandManager islandManager = IridiumSkyblock.getIslandManager();
             if (!islandManager.isIslandWorld(location)) return;
 
-            final User user = User.getUser(player);
-            final Island island = user.getIsland();
+            @NotNull final User user = User.getUser(player);
+            @NotNull final Island island = user.getIsland();
             if (island == null) return;
 
-            for (Mission mission : IridiumSkyblock.getMissions().missions) {
-                final Map<String, Integer> levels = island.getMissionLevels();
+            for (@NotNull Mission mission : IridiumSkyblock.getMissions().missions) {
+                @NotNull final Map<String, Integer> levels = island.getMissionLevels();
                 levels.putIfAbsent(mission.name, 1);
 
-                final MissionData level = mission.levels.get(levels.get(mission.name));
+                @NotNull final MissionData level = mission.levels.get(levels.get(mission.name));
                 if (level.type == MissionType.EXPERIENCE)
                     island.addMission(mission.name, event.getAmount());
             }

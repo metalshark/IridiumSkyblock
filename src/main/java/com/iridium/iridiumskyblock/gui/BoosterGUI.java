@@ -19,7 +19,7 @@ public class BoosterGUI extends GUI implements Listener {
     public void addContent() {
         super.addContent();
         if (getInventory().getViewers().isEmpty()) return;
-        if (IridiumSkyblock.getIslandManager().islands.containsKey(islandID)) {
+        if (getIsland() != null) {
             if (IridiumSkyblock.getBoosters().spawnerBooster.enabled)
                 setItem(IridiumSkyblock.getBoosters().spawnerBooster.slot, Utils.makeItem(IridiumSkyblock.getInventories().spawner, getIsland()));
             if (IridiumSkyblock.getBoosters().farmingBooster.enabled)
@@ -36,7 +36,7 @@ public class BoosterGUI extends GUI implements Listener {
     public void onInventoryClick(InventoryClickEvent e) {
         if (e.getInventory().equals(getInventory())) {
             Player p = (Player) e.getWhoClicked();
-            Island island = IridiumSkyblock.getIslandManager().islands.get(islandID);
+            Island island = getIsland();
             e.setCancelled(true);
             if (e.getClickedInventory() == null || !e.getClickedInventory().equals(getInventory())) return;
             if (e.getSlot() == IridiumSkyblock.getBoosters().spawnerBooster.slot && IridiumSkyblock.getBoosters().spawnerBooster.enabled) {

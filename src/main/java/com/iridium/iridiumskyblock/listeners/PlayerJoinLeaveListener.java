@@ -11,30 +11,32 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class PlayerJoinLeaveListener implements Listener {
 
     @EventHandler
-    public void onJoin(PlayerJoinEvent event) {
+    public void onJoin(@NotNull PlayerJoinEvent event) {
         try {
-            final Player player = event.getPlayer();
-            final IridiumSkyblock plugin = IridiumSkyblock.getInstance();
+            @NotNull final Player player = event.getPlayer();
+            @NotNull final IridiumSkyblock plugin = IridiumSkyblock.getInstance();
             if (player.isOp()) {
-                final String latest = plugin.getLatest();
+                @NotNull final String latest = plugin.getLatest();
                 if (plugin.getLatest() != null
                         && IridiumSkyblock.getConfiguration().notifyAvailableUpdate
                         && !latest.equals(plugin.getDescription().getVersion())) {
-                    final String prefix = IridiumSkyblock.getConfiguration().prefix;
+                    @NotNull final String prefix = IridiumSkyblock.getConfiguration().prefix;
                     player.sendMessage(Utils.color(prefix + " &7This message is only seen by opped players."));
                     player.sendMessage(Utils.color(prefix + " &7Newer version available: " + latest));
                 }
             }
 
-            final Location location = player.getLocation();
-            final IslandManager islandManager = IridiumSkyblock.getIslandManager();
+            @NotNull final Location location = player.getLocation();
+            @NotNull final IslandManager islandManager = IridiumSkyblock.getIslandManager();
             if (!islandManager.isIslandWorld(location)) return;
 
-            final User user = User.getUser(player);
+            @NotNull final User user = User.getUser(player);
             user.name = player.getName();
 
             if (user.flying && (user.getIsland() == null || user.getIsland().getFlightBooster() == 0)) {
@@ -44,7 +46,7 @@ public class PlayerJoinLeaveListener implements Listener {
             }
             user.bypassing = false;
 
-            final Island island = islandManager.getIslandViaLocation(location);
+            @Nullable final Island island = islandManager.getIslandViaLocation(location);
             if (island == null) return;
 
             Bukkit.getScheduler().runTaskLater(plugin, () -> island.sendBorder(player), 1);

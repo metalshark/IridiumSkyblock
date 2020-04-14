@@ -20,6 +20,8 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.material.Crops;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Map;
@@ -27,21 +29,21 @@ import java.util.Map;
 public class BlockPlaceListener implements Listener {
 
     @EventHandler
-    public void onBlockPlace(BlockPlaceEvent event) {
+    public void onBlockPlace(@NotNull BlockPlaceEvent event) {
         try {
-            final Block block = event.getBlock();
-            final Location location = block.getLocation();
-            final IslandManager islandManager = IridiumSkyblock.getIslandManager();
-            final Island island = islandManager.getIslandViaLocation(location);
+            @NotNull final Block block = event.getBlock();
+            @NotNull final Location location = block.getLocation();
+            @NotNull final IslandManager islandManager = IridiumSkyblock.getIslandManager();
+            @Nullable final Island island = islandManager.getIslandViaLocation(location);
             if (island == null) return;
 
-            final Player player = event.getPlayer();
-            final User user = User.getUser(player);
+            @NotNull final Player player = event.getPlayer();
+            @NotNull final User user = User.getUser(player);
 
-            final Material material = block.getType();
-            final XMaterial xmaterial = XMaterial.matchXMaterial(material);
-            final Config config = IridiumSkyblock.getConfiguration();
-            final Integer max = config.limitedBlocks.get(xmaterial);
+            @NotNull final Material material = block.getType();
+            @NotNull final XMaterial xmaterial = XMaterial.matchXMaterial(material);
+            @NotNull final Config config = IridiumSkyblock.getConfiguration();
+            @NotNull final Integer max = config.limitedBlocks.get(xmaterial);
             if (max != null) {
                 if (island.valuableBlocks.getOrDefault(xmaterial.name(), 0) >= max) {
                     player.sendMessage(Utils.color(IridiumSkyblock.getMessages().blockLimitReached
@@ -52,15 +54,15 @@ public class BlockPlaceListener implements Listener {
             }
 
             if (user.islandID == island.getId()) {
-                for (Mission mission : IridiumSkyblock.getMissions().missions) {
-                    final Map<String, Integer> levels = island.getMissionLevels();
+                for (@NotNull Mission mission : IridiumSkyblock.getMissions().missions) {
+                    @NotNull final Map<String, Integer> levels = island.getMissionLevels();
                     levels.putIfAbsent(mission.name, 1);
 
-                    final MissionData level = mission.levels.get(levels.get(mission.name));
+                    @NotNull final MissionData level = mission.levels.get(levels.get(mission.name));
                     if (level == null) continue;
                     if (level.type != MissionType.BLOCK_PLACE) continue;
 
-                    final List<String> conditions = level.conditions;
+                    @NotNull final List<String> conditions = level.conditions;
 
                     if (
                             conditions.isEmpty()
@@ -81,18 +83,18 @@ public class BlockPlaceListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onMonitorBlockPlace(BlockPlaceEvent event) {
+    public void onMonitorBlockPlace(@NotNull BlockPlaceEvent event) {
         try {
-            final Block block = event.getBlock();
-            final Location location = block.getLocation();
-            final IslandManager islandManager = IridiumSkyblock.getIslandManager();
-            final Island island = islandManager.getIslandViaLocation(location);
+            @NotNull final Block block = event.getBlock();
+            @NotNull final Location location = block.getLocation();
+            @NotNull final IslandManager islandManager = IridiumSkyblock.getIslandManager();
+            @Nullable final Island island = islandManager.getIslandViaLocation(location);
             if (island == null) return;
 
             if (!Utils.isBlockValuable(block)) return;
 
-            final Material material = block.getType();
-            final XMaterial xmaterial = XMaterial.matchXMaterial(material);
+            @NotNull final Material material = block.getType();
+            @NotNull final XMaterial xmaterial = XMaterial.matchXMaterial(material);
             island.valuableBlocks.compute(xmaterial.name(), (name, original) -> {
                 if (original == null) return 1;
                 return original + 1;
@@ -104,4 +106,5 @@ public class BlockPlaceListener implements Listener {
             IridiumSkyblock.getInstance().sendErrorMessage(e);
         }
     }
+
 }

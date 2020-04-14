@@ -9,41 +9,46 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.CreatureSpawner;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 
 public class InitIslandBlocksIterator implements Iterator<Long> {
-    private final Config config = IridiumSkyblock.getConfiguration();
-    private final IslandManager islandManager = IridiumSkyblock.getIslandManager();
-    private final IridiumSkyblock plugin = IridiumSkyblock.getInstance();
+    @NotNull private final Config config = IridiumSkyblock.getConfiguration();
+    @NotNull private final IslandManager islandManager = IridiumSkyblock.getIslandManager();
+    @NotNull private final IridiumSkyblock plugin = IridiumSkyblock.getInstance();
 
-    private final Island island;
+    @NotNull private final Island island;
 
     private final double islandMinX;
     private final double islandMinZ;
     private final double islandMaxX;
     private final double islandMaxZ;
 
-    private World currentWorld = islandManager.getWorld();
+    @NotNull private World currentWorld;
     private double currentX;
     private double currentY;
     private double currentZ;
 
-    private final double maxWorldHeight = currentWorld.getMaxHeight();
+    private final double maxWorldHeight;
 
     private long currentBlock = 0;
 
-    public InitIslandBlocksIterator(Island island) {
+    public InitIslandBlocksIterator(@NotNull Island island) {
         this.island = island;
 
-        final Location pos1 = island.getPos1();
+        @NotNull final Location pos1 = island.getPos1();
         islandMinX = pos1.getX();
         islandMinZ = pos1.getZ();
 
-        final Location pos2 = island.getPos1();
+        @NotNull final Location pos2 = island.getPos1();
         islandMaxX = pos2.getX();
         islandMaxZ = pos2.getZ();
+
+        currentWorld = Objects.requireNonNull(islandManager.getWorld());
+        maxWorldHeight = currentWorld.getMaxHeight();
 
         currentX = islandMinX;
         currentY = 0;
@@ -59,7 +64,7 @@ public class InitIslandBlocksIterator implements Iterator<Long> {
     }
 
     @Override
-    public Long next() {
+    @NotNull public Long next() {
         if (currentX < islandMaxX) {
             currentX++;
         } else if (currentZ < islandMaxZ) {
@@ -70,7 +75,7 @@ public class InitIslandBlocksIterator implements Iterator<Long> {
             currentZ = islandMinZ;
             currentY++;
         } else if (config.netherIslands && currentWorld.getName().equals(config.worldName)) {
-            currentWorld = islandManager.getNetherWorld();
+            currentWorld = Objects.requireNonNull(islandManager.getNetherWorld());
             currentX = islandMinX;
             currentY = 0;
             currentZ = islandMinZ;
@@ -79,8 +84,8 @@ public class InitIslandBlocksIterator implements Iterator<Long> {
         }
 
         if (plugin.updatingBlocks) {
-            final Location location = new Location(currentWorld, currentX, currentY, currentZ);
-            final Block block = location.getBlock();
+            @NotNull final Location location = new Location(currentWorld, currentX, currentY, currentZ);
+            @NotNull final Block block = location.getBlock();
             if (Utils.isBlockValuable(block) && !(block.getState() instanceof CreatureSpawner))
                 island.tempValues.add(location);
         }

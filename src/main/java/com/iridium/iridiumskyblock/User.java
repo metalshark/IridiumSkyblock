@@ -1,11 +1,13 @@
 package com.iridium.iridiumskyblock;
 
 import org.bukkit.OfflinePlayer;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 
 public class User {
 
@@ -29,14 +31,14 @@ public class User {
         bypassing = false;
         islandChat = false;
         flying = false;
-        IridiumSkyblock.getIslandManager().users.put(this.player, this);
+        IridiumSkyblock.getDatabaseManager().addUser(this);
     }
 
-    public Island getIsland() {
-        return IridiumSkyblock.getIslandManager().islands.getOrDefault(islandID, null);
+    @Nullable public Island getIsland() {
+        return IridiumSkyblock.getIslandManager().getIslandViaId(islandID);
     }
 
-    public Role getRole() {
+    @NotNull public Role getRole() {
         if (role == null) {
             if (getIsland() != null) {
                 if (getIsland().getOwner().equals(player)) {
@@ -51,16 +53,17 @@ public class User {
         return role;
     }
 
-    public static User getUser(String p) {
-        if (IridiumSkyblock.getIslandManager().users == null)
-            IridiumSkyblock.getIslandManager().users = new HashMap<>();
-        return IridiumSkyblock.getIslandManager().users.get(p);
+    public static @Nullable User getUser(@NotNull String uuidString) {
+        @NotNull final UUID uuid = UUID.fromString(uuidString);
+        return getUser(uuid);
     }
 
-    public static User getUser(OfflinePlayer p) {
-        if (p == null) return null;
-        if (IridiumSkyblock.getIslandManager().users == null)
-            IridiumSkyblock.getIslandManager().users = new HashMap<>();
-        return IridiumSkyblock.getIslandManager().users.containsKey(p.getUniqueId().toString()) ? IridiumSkyblock.getIslandManager().users.get(p.getUniqueId().toString()) : new User(p);
+    public static @Nullable User getUser(@NotNull OfflinePlayer offlinePlayer) {
+        return getUser(offlinePlayer.getUniqueId());
     }
+
+    public static @Nullable User getUser(@NotNull UUID uuid) {
+        return IridiumSkyblock.getDatabaseManager().getUserByUUID(uuid);
+    }
+
 }

@@ -8,6 +8,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Collections;
 import java.util.List;
@@ -19,7 +20,7 @@ public class KickCommand extends Command {
     }
 
     @Override
-    public void execute(CommandSender sender, String[] args) {
+    public void execute(@NotNull CommandSender sender, String[] args) {
         if (args.length != 2) {
             sender.sendMessage(Utils.color(IridiumSkyblock.getConfiguration().prefix) + "/is kick <player>");
             return;
@@ -54,7 +55,7 @@ public class KickCommand extends Command {
     }
 
     @Override
-    public List<String> TabComplete(CommandSender cs, org.bukkit.command.Command cmd, String s, String[] args) {
+    public List<String> TabComplete(@NotNull CommandSender cs, org.bukkit.command.@NotNull Command cmd, @NotNull String s, String[] args) {
         return null;
     }
 }

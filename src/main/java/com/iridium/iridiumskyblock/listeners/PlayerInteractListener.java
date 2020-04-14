@@ -19,59 +19,60 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class PlayerInteractListener implements Listener {
 
     @EventHandler
-    public void onPlayerInteract(PlayerInteractEvent event) {
+    public void onPlayerInteract(@NotNull PlayerInteractEvent event) {
         try {
-            final Player player = event.getPlayer();
-            final Location playerLocation = player.getLocation();
-            final IslandManager islandManager = IridiumSkyblock.getIslandManager();
-            if (!islandManager.isIslandWorld(playerLocation)) return;
+            @NotNull final Player player = event.getPlayer();
+            @NotNull final Location playerLocation = player.getLocation();
+            @NotNull final IslandManager islandManager = IridiumSkyblock.getIslandManager();
 
-            final User user = User.getUser(player);
-            final Block block = event.getClickedBlock();
-            if (block != null) {
-                final Location location = block.getLocation();
-                final Island island = islandManager.getIslandViaLocation(location);
-                if (island != null) {
-                    if (!island.getPermissions(user).interact) {
-                        event.setCancelled(true);
-                        return;
-                    }
-                    final ItemStack itemInHand = player.getItemInHand();
-                    if (itemInHand.getType().equals(Material.BUCKET) && island.failedGenerators.remove(location)) {
-                        if (itemInHand.getAmount() == 1)
-                            itemInHand.setType(Material.LAVA_BUCKET);
-                        else {
-                            player.getInventory().addItem(new ItemStack(Material.LAVA_BUCKET));
-                            player.getItemInHand().setAmount(itemInHand.getAmount() - 1);
-                        }
-                        block.setType(Material.AIR);
-                    }
-                } else if (!user.bypassing) {
-                    event.setCancelled(true);
-                    return;
-                }
+            @Nullable final Block block = event.getClickedBlock();
+            if (block == null) return;
+
+            @NotNull final Location location = block.getLocation();
+            @Nullable final Island island = islandManager.getIslandViaLocation(location);
+            if (island == null) return;
+
+            // Enforce the interact permission
+            @NotNull final User user = User.getUser(player);
+            if (!island.getPermissions(user).interact) {
+                event.setCancelled(true);
+                return;
             }
 
-            final ItemStack item = event.getItem();
-            if (IridiumSkyblock.getConfiguration().allowWaterInNether
+            // Allow using an empty bucket as a lava bucket where the cobblestone generator has failed
+            @NotNull final ItemStack itemInHand = player.getItemInHand();
+            if (itemInHand.getType().equals(Material.BUCKET) && island.failedGenerators.remove(location)) {
+                if (itemInHand.getAmount() == 1)
+                    itemInHand.setType(Material.LAVA_BUCKET);
+                else {
+                    player.getInventory().addItem(new ItemStack(Material.LAVA_BUCKET));
+                    player.getItemInHand().setAmount(itemInHand.getAmount() - 1);
+                }
+                block.setType(Material.AIR);
+            }
+
+            // Allow placing water in the nether
+            @Nullable final ItemStack item = event.getItem();
+            if (item != null
                     && event.getAction().equals(Action.RIGHT_CLICK_BLOCK)
-                    && item != null
-                    && block != null) {
-                final World world = block.getWorld();
+                    && IridiumSkyblock.getConfiguration().allowWaterInNether) {
+                @NotNull final World world = block.getWorld();
                 if (!world.getEnvironment().equals(World.Environment.NETHER)) return;
                 if (!item.getType().equals(Material.WATER_BUCKET)) return;
 
                 event.setCancelled(true);
 
-                final BlockFace face = event.getBlockFace();
+                @NotNull final BlockFace face = event.getBlockFace();
                 block.getRelative(face).setType(Material.WATER);
 
-                final Block relative = block.getRelative(face);
-                final BlockPlaceEvent blockPlaceEvent = new BlockPlaceEvent(relative, relative.getState(), block, item, player, false);
+                @NotNull final Block relative = block.getRelative(face);
+                @NotNull final BlockPlaceEvent blockPlaceEvent = new BlockPlaceEvent(relative, relative.getState(), block, item, player, false);
                 if (blockPlaceEvent.isCancelled()) {
                     block.getRelative(face).setType(Material.AIR);
                 } else if (player.getGameMode().equals(GameMode.SURVIVAL)) {
@@ -89,14 +90,14 @@ public class PlayerInteractListener implements Listener {
     }
 
     @EventHandler
-    public void onPlayerInteractEntity(PlayerInteractEntityEvent event) {
+    public void onPlayerInteractEntity(@NotNull PlayerInteractEntityEvent event) {
         try {
-            final Player player = event.getPlayer();
-            final User user = User.getUser(player);
-            final Entity rightClicked = event.getRightClicked();
-            final Location location = rightClicked.getLocation();
-            final IslandManager islandManager = IridiumSkyblock.getIslandManager();
-            final Island island = islandManager.getIslandViaLocation(location);
+            @NotNull final Player player = event.getPlayer();
+            @NotNull final User user = User.getUser(player);
+            @NotNull final Entity rightClicked = event.getRightClicked();
+            @NotNull final Location location = rightClicked.getLocation();
+            @NotNull final IslandManager islandManager = IridiumSkyblock.getIslandManager();
+            @Nullable final Island island = islandManager.getIslandViaLocation(location);
             if (island == null) return;
 
             if (island.getPermissions(user).interact) return;

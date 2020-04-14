@@ -14,6 +14,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDeathEvent;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Map;
@@ -21,28 +23,28 @@ import java.util.Map;
 public class EntityDeathListener implements Listener {
 
     @EventHandler
-    public void onEntityDeath(EntityDeathEvent event) {
+    public void onEntityDeath(@NotNull EntityDeathEvent event) {
         try {
-            final LivingEntity entity = event.getEntity();
-            final Player killer = entity.getKiller();
+            @NotNull final LivingEntity entity = event.getEntity();
+            @Nullable final Player killer = entity.getKiller();
             if (killer == null) return;
 
-            final Location location = killer.getLocation();
-            final IslandManager islandManager = IridiumSkyblock.getIslandManager();
+            @NotNull final Location location = killer.getLocation();
+            @NotNull final IslandManager islandManager = IridiumSkyblock.getIslandManager();
             if (!islandManager.isIslandWorld(location)) return;
 
-            final User user = User.getUser(killer);
-            final Island userIsland = user.getIsland();
+            @NotNull final User user = User.getUser(killer);
+            @NotNull final Island userIsland = user.getIsland();
             if (userIsland == null) return;
 
-            for (Mission mission : IridiumSkyblock.getMissions().missions) {
-                final Map<String, Integer> levels = userIsland.getMissionLevels();
+            for (@NotNull Mission mission : IridiumSkyblock.getMissions().missions) {
+                @NotNull final Map<String, Integer> levels = userIsland.getMissionLevels();
                 levels.putIfAbsent(mission.name, 1);
 
-                final MissionData level = mission.levels.get(levels.get(mission.name));
+                @NotNull final MissionData level = mission.levels.get(levels.get(mission.name));
                 if (level.type != MissionType.ENTITY_KILL) continue;
 
-                final List<String> conditions = level.conditions;
+                @NotNull final List<String> conditions = level.conditions;
                 if (conditions.isEmpty() || conditions.contains(entity.toString()))
                     userIsland.addMission(mission.name, 1);
             }
@@ -53,4 +55,5 @@ public class EntityDeathListener implements Listener {
             IridiumSkyblock.getInstance().sendErrorMessage(e);
         }
     }
+
 }

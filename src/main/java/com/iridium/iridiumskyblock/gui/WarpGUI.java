@@ -26,8 +26,8 @@ public class WarpGUI extends GUI implements Listener {
     public void addContent() {
         super.addContent();
         if (getInventory().getViewers().isEmpty()) return;
-        if (IridiumSkyblock.getIslandManager().islands.containsKey(islandID)) {
-            Island island = IridiumSkyblock.getIslandManager().islands.get(islandID);
+        Island island = getIsland();
+        if (island != null) {
             int i = 9;
             warps.clear();
             for (Island.Warp warp : island.getWarps()) {

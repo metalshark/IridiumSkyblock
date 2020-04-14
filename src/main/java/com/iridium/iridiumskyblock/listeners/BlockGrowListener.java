@@ -13,31 +13,34 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockGrowEvent;
 import org.bukkit.material.Crops;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class BlockGrowListener implements Listener {
 
     @EventHandler
-    public void onBlockGrow(BlockGrowEvent event) {
+    public void onBlockGrow(@NotNull BlockGrowEvent event) {
         try {
-            final Block block = event.getBlock();
-            final Location location = block.getLocation();
-            final IslandManager islandManager = IridiumSkyblock.getIslandManager();
-            final Island island = islandManager.getIslandViaLocation(location);
+            @NotNull final Block block = event.getBlock();
+            @NotNull final Location location = block.getLocation();
+            @NotNull final IslandManager islandManager = IridiumSkyblock.getIslandManager();
+            @Nullable final Island island = islandManager.getIslandViaLocation(location);
             if (island == null) return;
 
             if (island.getFarmingBooster() == 0) return;
 
-            final Material material = block.getType();
+            @NotNull final Material material = block.getType();
             if (!XBlock.isCrops(material)) return;
 
             event.setCancelled(true);
 
-            final Crops crops = new Crops(CropState.RIPE);
-            final BlockState blockState = block.getState();
+            @NotNull final Crops crops = new Crops(CropState.RIPE);
+            @NotNull final BlockState blockState = block.getState();
             blockState.setData(crops);
             blockState.update();
         } catch (Exception e) {
             IridiumSkyblock.getInstance().sendErrorMessage(e);
         }
     }
+
 }

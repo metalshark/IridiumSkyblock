@@ -8,15 +8,16 @@ import org.bukkit.block.Block;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.LeavesDecayEvent;
+import org.jetbrains.annotations.NotNull;
 
 public class LeafDecayListener implements Listener {
 
     @EventHandler
-    public void onLeafDecay(LeavesDecayEvent event) {
+    public void onLeafDecay(@NotNull LeavesDecayEvent event) {
         try {
-            final Block block = event.getBlock();
-            final Location location = block.getLocation();
-            final IslandManager islandManager = IridiumSkyblock.getIslandManager();
+            @NotNull final Block block = event.getBlock();
+            @NotNull final Location location = block.getLocation();
+            @NotNull final IslandManager islandManager = IridiumSkyblock.getIslandManager();
             if (!islandManager.isIslandWorld(location)) return;
 
             if (!IridiumSkyblock.getConfiguration().disableLeafDecay) return;

@@ -9,18 +9,22 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerTeleportEvent;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class PlayerTeleportListener implements Listener {
 
     @EventHandler
-    public void onPlayerTeleport(PlayerTeleportEvent event) {
+    public void onPlayerTeleport(@NotNull PlayerTeleportEvent event) {
         try {
-            final Location toLocation = event.getTo();
-            final IslandManager islandManager = IridiumSkyblock.getIslandManager();
-            final Island island = islandManager.getIslandViaLocation(toLocation);
+            @Nullable final Location toLocation = event.getTo();
+            if (toLocation == null) return;
+
+            @NotNull final IslandManager islandManager = IridiumSkyblock.getIslandManager();
+            @Nullable final Island island = islandManager.getIslandViaLocation(toLocation);
             if (island == null) return;
 
-            final Player player = event.getPlayer();
+            @NotNull final Player player = event.getPlayer();
             Bukkit.getScheduler().scheduleSyncDelayedTask(IridiumSkyblock.getInstance(), () -> island.sendBorder(player), 1);
         } catch (Exception e) {
             IridiumSkyblock.getInstance().sendErrorMessage(e);

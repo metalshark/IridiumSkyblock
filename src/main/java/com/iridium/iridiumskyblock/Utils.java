@@ -216,14 +216,14 @@ public class Utils {
     }
 
     public static List<Island> getTopIslands() {
-        List<Island> islands = new ArrayList<>(IridiumSkyblock.getIslandManager().islands.values());
+        List<Island> islands = new ArrayList<>(IridiumSkyblock.getDatabaseManager().getIslands());
         islands.sort(Comparator.comparingDouble(Island::getValue));
         Collections.reverse(islands);
         return islands;
     }
 
     public static List<Island> getIslands() {
-        List<Island> islands = new ArrayList<>(IridiumSkyblock.getIslandManager().islands.values());
+        List<Island> islands = new ArrayList<>(IridiumSkyblock.getDatabaseManager().getIslands());
         islands.sort(Comparator.comparingInt(Island::getVotes));
         Collections.reverse(islands);
         return islands;

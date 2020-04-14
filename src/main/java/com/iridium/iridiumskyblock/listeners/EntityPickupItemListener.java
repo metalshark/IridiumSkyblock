@@ -10,24 +10,27 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerPickupItemEvent;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class EntityPickupItemListener implements Listener {
 
     @EventHandler
-    public void onEntityPickupItem(PlayerPickupItemEvent event) {
+    public void onEntityPickupItem(@NotNull PlayerPickupItemEvent event) {
         try {
-            final Item item = event.getItem();
-            final Location location = item.getLocation();
-            final IslandManager islandManager = IridiumSkyblock.getIslandManager();
-            final Island island = islandManager.getIslandViaLocation(location);
+            @NotNull final Item item = event.getItem();
+            @NotNull final Location location = item.getLocation();
+            @NotNull final IslandManager islandManager = IridiumSkyblock.getIslandManager();
+            @Nullable final Island island = islandManager.getIslandViaLocation(location);
             if (island == null) return;
 
-            final Player player = event.getPlayer();
-            final User user = User.getUser(player);
+            @NotNull final Player player = event.getPlayer();
+            @NotNull final User user = User.getUser(player);
             if (!island.getPermissions(user).pickupItems)
                 event.setCancelled(true);
         } catch (Exception ex) {
             IridiumSkyblock.getInstance().sendErrorMessage(ex);
         }
     }
+
 }

@@ -2,11 +2,13 @@ package com.iridium.iridiumskyblock;
 
 import com.iridium.iridiumskyblock.commands.CommandManager;
 import com.iridium.iridiumskyblock.configs.*;
+import com.iridium.iridiumskyblock.db.DatabaseManager;
 import com.iridium.iridiumskyblock.gui.*;
 import com.iridium.iridiumskyblock.listeners.*;
 import com.iridium.iridiumskyblock.nms.NMS;
 import com.iridium.iridiumskyblock.placeholders.ClipPlaceholderAPIManager;
 import com.iridium.iridiumskyblock.placeholders.MVDWPlaceholderAPIManager;
+import com.iridium.iridiumskyblock.runnables.IslandValueRunnable;
 import com.iridium.iridiumskyblock.serializer.Persist;
 import com.iridium.iridiumskyblock.support.*;
 import lombok.Getter;
@@ -16,6 +18,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.generator.ChunkGenerator;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
 import java.lang.reflect.Field;
@@ -29,7 +32,7 @@ import java.util.*;
 
 public class IridiumSkyblock extends JavaPlugin {
 
-    @Getter public static Config configuration;
+    @Getter @NotNull public static Config configuration;
     @Getter public static Messages messages;
     @Getter public static Missions missions;
     public static Upgrades upgrades;
@@ -52,6 +55,7 @@ public class IridiumSkyblock extends JavaPlugin {
 
     @Getter public static IslandManager islandManager;
     @Getter private static CommandManager commandManager;
+    @Getter private static DatabaseManager databaseManager;
     public Map<Schematics.FakeSchematic, Schematic> schems = new HashMap<>();
     public Map<Schematics.FakeSchematic, Schematic> netherschems = new HashMap<>();
     public boolean updatingBlocks = false;
@@ -133,7 +137,7 @@ public class IridiumSkyblock extends JavaPlugin {
                 Bukkit.getScheduler().scheduleAsyncRepeatingTask(IridiumSkyblock.getInstance(), this::saveIslandManager, 0, 20 * 60);
 
                 if (configuration.doIslandBackup)
-                    Bukkit.getScheduler().scheduleAsyncRepeatingTask(IridiumSkyblock.getInstance(), this::backupIslandManager, 0, 20 * 60 * getConfiguration().backupIntervalMinutes);
+                    Bukkit.getScheduler().scheduleAsyncRepeatingTask(IridiumSkyblock.getInstance(), this::backupIslandManager, 0, 20 * 60 * configuration.backupIntervalMinutes);
 
                 Bukkit.getScheduler().scheduleAsyncRepeatingTask(IridiumSkyblock.getInstance(), this::addPages, 0, 20 * 60);
 
@@ -177,7 +181,7 @@ public class IridiumSkyblock extends JavaPlugin {
                     }
                     if (latest != null && !latest.equals(getDescription().getVersion())) {
                         getLogger().info("Newer version available: " + latest);
-                        if (getConfiguration().automaticUpdate) {
+                        if (configuration.automaticUpdate) {
                             getLogger().info("Attempting to download version: " + latest);
                             try {
                                 getFile().renameTo(new File(getFile().getParentFile(), "/IridiumSkyblock-" + latest + ".jar"));
@@ -250,7 +254,7 @@ public class IridiumSkyblock extends JavaPlugin {
             }
             loadConfigs();
             saveConfigs();
-            player.sendMessage(Utils.color(IridiumSkyblock.getMessages().reloaded.replace("%prefix%", IridiumSkyblock.getConfiguration().prefix)));
+            player.sendMessage(Utils.color(IridiumSkyblock.getMessages().reloaded.replace("%prefix%", IridiumSkyblock.configuration.prefix)));
         }, "Change Language");
         player.openInventory(gui.getInventory());
     }
@@ -285,7 +289,7 @@ public class IridiumSkyblock extends JavaPlugin {
         Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), "mv import " + islandManager.getWorld().getName() + " normal -g " + getName());
         Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), "mv modify set generator " + getName() + " " + islandManager.getWorld().getName());
 
-        if (IridiumSkyblock.getConfiguration().netherIslands) {
+        if (IridiumSkyblock.configuration.netherIslands) {
             Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), "mv import " + islandManager.getNetherWorld().getName() + " nether -g " + getName());
             Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), "mv modify set generator " + getName() + " " + islandManager.getNetherWorld().getName());
         }
@@ -335,7 +339,7 @@ public class IridiumSkyblock extends JavaPlugin {
             File backupsFolder = new File(getDataFolder(), "backups");
             if (!backupsFolder.exists()) backupsFolder.mkdir();
             Calendar cal = Calendar.getInstance();
-            cal.add(Calendar.DATE, -getConfiguration().deleteBackupsAfterDays);
+            cal.add(Calendar.DATE, -configuration.deleteBackupsAfterDays);
             for (File file : backupsFolder.listFiles()) {
                 Date date = getLocalDateTime(file.getName().replace(".json", "").replace("IslandManager_", ""));
                 if (date == null) {
@@ -392,23 +396,23 @@ public class IridiumSkyblock extends JavaPlugin {
             public void run() {
                 if (islandManager != null) {
                     LocalDateTime ldt = LocalDateTime.now();
-                    if (ldt.getDayOfWeek().equals(DayOfWeek.MONDAY) && getConfiguration().missionRestart.equals(MissionRestart.Weekly) || getConfiguration().missionRestart.equals(MissionRestart.Daily)) {
-                        for (Island island : islandManager.islands.values()) {
+                    if (ldt.getDayOfWeek().equals(DayOfWeek.MONDAY) && configuration.missionRestart.equals(MissionRestart.Weekly) || configuration.missionRestart.equals(MissionRestart.Daily)) {
+                        for (@NotNull Island island : databaseManager.getIslands()) {
                             island.resetMissions();
                         }
                     }
-                    for (Island island : islandManager.islands.values()) {
+                    for (@NotNull Island island : databaseManager.getIslands()) {
                         double cm = island.money;
                         int cc = island.getCrystals();
                         int ce = island.exp;
-                        island.money = Math.floor(island.money * (1 + (getConfiguration().dailyMoneyInterest / 100.00)));
-                        island.setCrystals((int) Math.floor(island.getCrystals() * (1 + (getConfiguration().dailyCrystalsInterest / 100.00))));
-                        island.exp = (int) Math.floor(island.exp * (1 + (getConfiguration().dailyExpInterest / 100.00)));
+                        island.money = Math.floor(island.money * (1 + (configuration.dailyMoneyInterest / 100.00)));
+                        island.setCrystals((int) Math.floor(island.getCrystals() * (1 + (configuration.dailyCrystalsInterest / 100.00))));
+                        island.exp = (int) Math.floor(island.exp * (1 + (configuration.dailyExpInterest / 100.00)));
                         for (String member : island.getMembers()) {
-                            Player p = Bukkit.getPlayer(User.getUser(member).name);
+                            final Player p = Bukkit.getPlayer(User.getUser(member).name);
                             if (p != null) {
                                 if (cm != island.money && cc != island.getCrystals() && ce != island.exp)
-                                    p.sendMessage(Utils.color(IridiumSkyblock.getMessages().islandInterest.replace("%exp%", island.exp - ce + "").replace("%crystals%", island.getCrystals() - cc + "").replace("%money%", island.money - cm + "").replace("%prefix%", IridiumSkyblock.getConfiguration().prefix)));
+                                    p.sendMessage(Utils.color(IridiumSkyblock.getMessages().islandInterest.replace("%exp%", island.exp - ce + "").replace("%crystals%", island.getCrystals() - cc + "").replace("%money%", island.money - cm + "").replace("%prefix%", IridiumSkyblock.configuration.prefix)));
                             }
                         }
                     }
@@ -420,29 +424,9 @@ public class IridiumSkyblock extends JavaPlugin {
     }
 
     public void islandValueManager() {
-        //Loop through all online islands and make sure Island#valuableBlocks is accurate
-        Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new Runnable() {
-            ListIterator<Integer> islands = new ArrayList<>(islandManager.islands.keySet()).listIterator();
-
-            @Override
-            public void run() {
-                if (!updatingBlocks) {
-                    if (!islands.hasNext()) {
-                        islands = new ArrayList<>(islandManager.islands.keySet()).listIterator();
-                    }
-                    if (islands.hasNext()) {
-                        int id = islands.next();
-                        Island island = islandManager.getIslandViaId(id);
-                        if (!island.updating) {
-                            if (island != null) {
-                                updatingBlocks = true;
-                                island.initBlocks();
-                            }
-                        }
-                    }
-                }
-            }
-        }, 0, 0);
+        // Loop through all online islands and make sure Island#valuableBlocks is accurate
+        final Runnable task = new IslandValueRunnable();
+        Bukkit.getScheduler().scheduleSyncRepeatingTask(this, task, 0, 0);
     }
 
     public void sendErrorMessage(Exception e) {
@@ -518,11 +502,11 @@ public class IridiumSkyblock extends JavaPlugin {
 
         if (islandManager == null) return;
 
-        for (Island island : islandManager.islands.values()) {
+        for (@NotNull Island island : databaseManager.getIslands()) {
             island.init();
         }
         islandManager.getWorld().getWorldBorder().setSize(Double.MAX_VALUE);
-        if (getConfiguration().netherIslands)
+        if (configuration.netherIslands)
             islandManager.getNetherWorld().getWorldBorder().setSize(Double.MAX_VALUE);
     }
 
@@ -607,13 +591,13 @@ public class IridiumSkyblock extends JavaPlugin {
         if (getBoosters().flightBooster.crystalsCost == 0 && getBoosters().flightBooster.vaultCost == 0)
             getBoosters().flightBooster.crystalsCost = 15;
 
-        if (getConfiguration().blockvalue != null) {
-            getBlockValues().blockvalue = new HashMap<>(getConfiguration().blockvalue);
-            getConfiguration().blockvalue = null;
+        if (configuration.blockvalue != null) {
+            getBlockValues().blockvalue = new HashMap<>(configuration.blockvalue);
+            configuration.blockvalue = null;
         }
-        if (getConfiguration().spawnervalue != null) {
-            getBlockValues().spawnervalue = new HashMap<>(getConfiguration().spawnervalue);
-            getConfiguration().spawnervalue = null;
+        if (configuration.spawnervalue != null) {
+            getBlockValues().spawnervalue = new HashMap<>(configuration.spawnervalue);
+            configuration.spawnervalue = null;
         }
         int max = 0;
         for (Upgrades.IslandUpgrade size : getUpgrades().sizeUpgrade.upgrades.values()) {
@@ -621,11 +605,11 @@ public class IridiumSkyblock extends JavaPlugin {
                 max = size.size;
             }
         }
-        if (getConfiguration().distance <= max) {
-            getConfiguration().distance = max + 1;
+        if (configuration.distance <= max) {
+            configuration.distance = max + 1;
         }
         if (islandManager != null) {
-            for (Island island : islandManager.islands.values()) {
+            for (@NotNull Island island : databaseManager.getIslands()) {
                 if (island.getIslandMenuGUI() != null) island.getIslandMenuGUI().getInventory().clear();
                 if (island.getSchematicSelectGUI() != null) island.getSchematicSelectGUI().getInventory().clear();
                 if (island.getBankGUI() != null) island.getBankGUI().getInventory().clear();
@@ -637,7 +621,7 @@ public class IridiumSkyblock extends JavaPlugin {
                 if (island.getUpgradeGUI() != null) island.getUpgradeGUI().getInventory().clear();
                 if (island.getWarpGUI() != null) island.getWarpGUI().getInventory().clear();
                 if (island.getBorderColorGUI() != null) island.getBorderColorGUI().getInventory().clear();
-                if (getConfiguration().missionRestart == MissionRestart.Instantly) {
+                if (configuration.missionRestart == MissionRestart.Instantly) {
                     island.resetMissions();
                 }
             }
@@ -651,7 +635,7 @@ public class IridiumSkyblock extends JavaPlugin {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        getConfiguration().biomes.sort(Comparator.comparing(XBiome::toString));
+        configuration.biomes.sort(Comparator.comparing(XBiome::toString));
         return true;
     }
 

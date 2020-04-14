@@ -11,12 +11,14 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockPistonExtendEvent;
 import org.bukkit.event.block.BlockPistonRetractEvent;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 
 public class BlockPistonListener implements Listener {
 
-    private static final Map<BlockFace, int[]> offsets = ImmutableMap.<BlockFace, int[]>builder()
+    @NotNull private static final Map<BlockFace, int[]> offsets = ImmutableMap.<BlockFace, int[]>builder()
         .put(BlockFace.EAST,  new int[]{ 1, 0, 0})
         .put(BlockFace.WEST,  new int[]{-1, 0, 0})
         .put(BlockFace.UP,    new int[]{ 0, 1, 0})
@@ -28,16 +30,16 @@ public class BlockPistonListener implements Listener {
     @EventHandler
     public void onBlockPistonExtend(BlockPistonExtendEvent event) {
         try {
-            final Block block = event.getBlock();
-            final Location location = block.getLocation();
-            final IslandManager islandManager = IridiumSkyblock.getIslandManager();
-            final Island island = islandManager.getIslandViaLocation(location);
+            @NotNull final Block block = event.getBlock();
+            @NotNull final Location location = block.getLocation();
+            @NotNull final IslandManager islandManager = IridiumSkyblock.getIslandManager();
+            @Nullable final Island island = islandManager.getIslandViaLocation(location);
             if (island == null) return;
 
-            final BlockFace face = event.getDirection();
-            for (Block extendedBlock : event.getBlocks()) {
-                final Location extendedBlockLocation = extendedBlock.getLocation();
-                final int[] offset = offsets.get(face);
+            @NotNull final BlockFace face = event.getDirection();
+            for (@NotNull Block extendedBlock : event.getBlocks()) {
+                @NotNull final Location extendedBlockLocation = extendedBlock.getLocation();
+                @NotNull final int[] offset = offsets.get(face);
                 extendedBlockLocation.add(offset[0], offset[1], offset[2]);
                 if (!island.isInIsland(extendedBlockLocation)) {
                     event.setCancelled(true);
@@ -50,16 +52,16 @@ public class BlockPistonListener implements Listener {
     }
 
     @EventHandler
-    public void onBlockPistonReact(BlockPistonRetractEvent event) {
+    public void onBlockPistonReact(@NotNull BlockPistonRetractEvent event) {
         try {
-            final Block block = event.getBlock();
-            final Location location = block.getLocation();
-            final IslandManager islandManager = IridiumSkyblock.getIslandManager();
-            final Island island = islandManager.getIslandViaLocation(location);
+            @NotNull final Block block = event.getBlock();
+            @NotNull final Location location = block.getLocation();
+            @NotNull final IslandManager islandManager = IridiumSkyblock.getIslandManager();
+            @Nullable final Island island = islandManager.getIslandViaLocation(location);
             if (island == null) return;
 
-            for (Block retractedBlock : event.getBlocks()) {
-                final Location retractedBlockLocation = retractedBlock.getLocation();
+            for (@NotNull Block retractedBlock : event.getBlocks()) {
+                @NotNull final Location retractedBlockLocation = retractedBlock.getLocation();
                 if (!island.isInIsland(retractedBlockLocation)) {
                     event.setCancelled(true);
                     return;
@@ -69,4 +71,5 @@ public class BlockPistonListener implements Listener {
             IridiumSkyblock.getInstance().sendErrorMessage(e);
         }
     }
+
 }

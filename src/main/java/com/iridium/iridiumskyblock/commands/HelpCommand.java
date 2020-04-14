@@ -6,6 +6,7 @@ import net.md_5.bungee.api.chat.*;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
 import java.util.List;
@@ -17,7 +18,7 @@ public class HelpCommand extends Command {
     }
 
     @Override
-    public void execute(CommandSender cs, String[] args) {
+    public void execute(@NotNull CommandSender cs, String[] args) {
         Player p = (Player) cs;
         int page = 1;
         if (args.length == 2) {
@@ -56,7 +57,7 @@ public class HelpCommand extends Command {
     }
 
     @Override
-    public List<String> TabComplete(CommandSender cs, org.bukkit.command.Command cmd, String s, String[] args) {
+    public List<String> TabComplete(@NotNull CommandSender cs, org.bukkit.command.@NotNull Command cmd, @NotNull String s, String[] args) {
         return null;
     }
 }

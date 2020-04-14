@@ -8,6 +8,7 @@ import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
 
 public class IslandDemoteEvent extends IslandEvent {
+
     @Getter @NotNull private final User target;
     @Getter @NotNull private final User demoter;
     @Getter @NotNull private final Role role;
@@ -19,4 +20,5 @@ public class IslandDemoteEvent extends IslandEvent {
         this.demoter = demoter;
         this.role = role;
     }
+
 }

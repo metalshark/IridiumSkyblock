@@ -11,17 +11,19 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntitySpawnEvent;
 import org.bukkit.event.vehicle.VehicleCreateEvent;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.UUID;
 
 public class EntitySpawnListener implements Listener {
 
     @EventHandler
-    public void onEntitySpawn(EntitySpawnEvent event) {
-        final Entity entity = event.getEntity();
-        final Location location = entity.getLocation();
-        final IslandManager islandManager = IridiumSkyblock.getIslandManager();
-        final Island island = islandManager.getIslandViaLocation(location);
+    public void onEntitySpawn(@NotNull EntitySpawnEvent event) {
+        @NotNull final Entity entity = event.getEntity();
+        @NotNull final Location location = entity.getLocation();
+        @NotNull final IslandManager islandManager = IridiumSkyblock.getIslandManager();
+        @Nullable final Island island = islandManager.getIslandViaLocation(location);
         if (island == null) return;
 
         if (!IridiumSkyblock.getConfiguration().blockedEntities.contains(event.getEntityType())) return;
@@ -31,11 +33,11 @@ public class EntitySpawnListener implements Listener {
     }
 
     @EventHandler
-    public void onVehicleSpawn(VehicleCreateEvent event) {
-        final Vehicle vehicle = event.getVehicle();
-        final IslandManager islandManager = IridiumSkyblock.getIslandManager();
-        final Location location = vehicle.getLocation();
-        final Island island = islandManager.getIslandViaLocation(location);
+    public void onVehicleSpawn(@NotNull VehicleCreateEvent event) {
+        @NotNull final Vehicle vehicle = event.getVehicle();
+        @NotNull final IslandManager islandManager = IridiumSkyblock.getIslandManager();
+        @NotNull final Location location = vehicle.getLocation();
+        @Nullable final Island island = islandManager.getIslandViaLocation(location);
         if (island == null) return;
 
         if (!IridiumSkyblock.getConfiguration().blockedEntities.contains(vehicle.getType())) return;
@@ -44,12 +46,11 @@ public class EntitySpawnListener implements Listener {
         monitorEntity(vehicle);
     }
 
-    public void monitorEntity(Entity entity) {
-        if (entity == null) return;
+    public void monitorEntity(@NotNull Entity entity) {
         if (entity.isDead()) return;
 
-        final UUID uuid = entity.getUniqueId();
-        final Island startingIsland = IridiumSkyblock.getInstance().entities.get(uuid);
+        @NotNull final UUID uuid = entity.getUniqueId();
+        @NotNull final Island startingIsland = IridiumSkyblock.getInstance().entities.get(uuid);
         if (startingIsland.isInIsland(entity.getLocation())) {
             //The entity is still in the island, so make a scheduler to check again
             Bukkit.getScheduler().scheduleSyncDelayedTask(IridiumSkyblock.getInstance(), () -> monitorEntity(entity), 20);
@@ -59,4 +60,5 @@ public class EntitySpawnListener implements Listener {
             IridiumSkyblock.getInstance().entities.remove(uuid);
         }
     }
+
 }

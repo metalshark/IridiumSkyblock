@@ -4,6 +4,7 @@ import com.iridium.iridiumskyblock.Island;
 import com.iridium.iridiumskyblock.User;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Collections;
 import java.util.List;
@@ -15,7 +16,7 @@ public class PermissionsCommand extends Command {
     }
 
     @Override
-    public void execute(CommandSender sender, String[] args) {
+    public void execute(@NotNull CommandSender sender, String[] args) {
         Player player = (Player) sender;
         User user = User.getUser(player);
         Island island = user.getIsland();
@@ -25,7 +26,7 @@ public class PermissionsCommand extends Command {
     }
 
     @Override
-    public List<String> TabComplete(CommandSender cs, org.bukkit.command.Command cmd, String s, String[] args) {
+    public List<String> TabComplete(@NotNull CommandSender cs, org.bukkit.command.@NotNull Command cmd, @NotNull String s, String[] args) {
         return null;
     }
 }

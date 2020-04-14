@@ -17,6 +17,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityExplodeEvent;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
 import java.util.UUID;
@@ -24,11 +25,11 @@ import java.util.UUID;
 public class EntityExplodeListener implements Listener {
 
     @EventHandler
-    public void onEntityExplode(EntityExplodeEvent event) {
+    public void onEntityExplode(@NotNull EntityExplodeEvent event) {
         try {
-            final Entity entity = event.getEntity();
-            final Location location = entity.getLocation();
-            final IslandManager islandManager = IridiumSkyblock.getIslandManager();
+            @NotNull final Entity entity = event.getEntity();
+            @NotNull final Location location = entity.getLocation();
+            @NotNull final IslandManager islandManager = IridiumSkyblock.getIslandManager();
             if (!islandManager.isIslandWorld(location)) return;
 
             if (!IridiumSkyblock.getConfiguration().allowExplosions)
@@ -39,16 +40,16 @@ public class EntityExplodeListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onMonitorEntityExplode(EntityExplodeEvent event) {
+    public void onMonitorEntityExplode(@NotNull EntityExplodeEvent event) {
         try {
-            final Entity entity = event.getEntity();
-            final Location location = entity.getLocation();
-            final IslandManager islandManager = IridiumSkyblock.getIslandManager();
+            @NotNull final Entity entity = event.getEntity();
+            @NotNull final Location location = entity.getLocation();
+            @NotNull final IslandManager islandManager = IridiumSkyblock.getIslandManager();
             if (!islandManager.isIslandWorld(location)) return;
 
-            final UUID uuid = entity.getUniqueId();
-            final IridiumSkyblock plugin = IridiumSkyblock.getInstance();
-            final Map<UUID, Island> entities = plugin.entities;
+            @NotNull final UUID uuid = entity.getUniqueId();
+            @NotNull final IridiumSkyblock plugin = IridiumSkyblock.getInstance();
+            @NotNull final Map<UUID, Island> entities = plugin.entities;
             Island island = entities.get(uuid);
             if (island != null && island.isInIsland(location)) {
                 event.setCancelled(true);
@@ -60,9 +61,9 @@ public class EntityExplodeListener implements Listener {
             island = islandManager.getIslandViaLocation(location);
             if (island == null) return;
 
-            for (Block block : event.blockList()) {
+            for (@NotNull Block block : event.blockList()) {
                 if (!island.isInIsland(block.getLocation())) {
-                    final BlockState state = block.getState();
+                    @NotNull final BlockState state = block.getState();
                     IridiumSkyblock.nms.setBlockFast(block, 0, (byte) 0);
                     Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> state.update(true, true));
                 }
@@ -70,8 +71,8 @@ public class EntityExplodeListener implements Listener {
                 if (!Utils.isBlockValuable(block)) continue;
 
                 if (!(block.getState() instanceof CreatureSpawner)) {
-                    final Material material = block.getType();
-                    final XMaterial xmaterial = XMaterial.matchXMaterial(material);
+                    @NotNull final Material material = block.getType();
+                    @NotNull final XMaterial xmaterial = XMaterial.matchXMaterial(material);
                     island.valuableBlocks.computeIfPresent(xmaterial.name(), (name, original) -> original - 1);
                 }
 
@@ -83,4 +84,5 @@ public class EntityExplodeListener implements Listener {
             IridiumSkyblock.getInstance().sendErrorMessage(ex);
         }
     }
+
 }

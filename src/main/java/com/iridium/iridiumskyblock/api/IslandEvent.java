@@ -9,15 +9,14 @@ import org.jetbrains.annotations.NotNull;
 
 @RequiredArgsConstructor
 public abstract class IslandEvent extends Event {
-    @NotNull
-    private static final HandlerList handlers = new HandlerList();
+
+    @NotNull private static final HandlerList handlers = new HandlerList();
 
     @Getter
     @NotNull private final Island island;
 
     @Override
-    @NotNull
-    public HandlerList getHandlers() {
+    @NotNull public HandlerList getHandlers() {
         return handlers;
     }
 
@@ -25,4 +24,5 @@ public abstract class IslandEvent extends Event {
     public static HandlerList getHandlerList() {
         return handlers;
     }
+
 }

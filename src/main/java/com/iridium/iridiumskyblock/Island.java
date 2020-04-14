@@ -8,6 +8,7 @@ import com.iridium.iridiumskyblock.configs.*;
 import com.iridium.iridiumskyblock.configs.Missions.Mission;
 import com.iridium.iridiumskyblock.configs.Missions.MissionData;
 import com.iridium.iridiumskyblock.gui.*;
+import com.iridium.iridiumskyblock.iterators.IslandChunkIterator;
 import com.iridium.iridiumskyblock.runnables.InitIslandBlocksRunnable;
 import com.iridium.iridiumskyblock.runnables.InitIslandBlocksWithSenderRunnable;
 import com.iridium.iridiumskyblock.support.*;
@@ -27,6 +28,7 @@ import org.bukkit.scheduler.BukkitScheduler;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 
 public class Island {
@@ -411,7 +413,7 @@ public class Island {
         final BlockValues blockValues = IridiumSkyblock.getBlockValues();
         final Map<XMaterial, Double> blockValueMap = blockValues.blockvalue;
 
-        double value = 0;
+        AtomicReference<Double> value = new AtomicReference<>((double) 0);
         for (Map.Entry<String, Integer> entry : valuableBlocks.entrySet()) {
             final String item = entry.getKey();
             final Optional<XMaterial> xmaterial = XMaterial.matchXMaterial(item);
@@ -420,28 +422,8 @@ public class Island {
             final Double blockValue = blockValueMap.get(xmaterial.get());
             if (blockValue == null) continue;
 
-            value += (entry.getValue() * blockValue);
+            value.updateAndGet(v -> (double) (v + (entry.getValue() * blockValue)));
         }
-
-        final Config config = IridiumSkyblock.getConfiguration();
-        final IslandManager islandManager = IridiumSkyblock.getIslandManager();
-
-        final Set<World> worlds = new HashSet<>();
-        final World islandWorld = islandManager.getWorld();
-        worlds.add(islandWorld);
-
-        if (config.netherIslands) {
-            final World netherIslandWorld = islandManager.getNetherWorld();
-            worlds.add(netherIslandWorld);
-        }
-
-        final Chunk pos1Chunk = pos1.getChunk();
-        final int minChunkX = pos1Chunk.getX();
-        final int minChunkZ = pos1Chunk.getZ();
-
-        final Chunk pos2Chunk = pos2.getChunk();
-        final int maxChunkX = pos2Chunk.getX();
-        final int maxChunkZ = pos2Chunk.getZ();
 
         final double minX = pos1.getX();
         final double minZ = pos1.getZ();
@@ -467,43 +449,38 @@ public class Island {
 
         spawners.clear();
 
-        for (World world: worlds) {
-            for (int X = minChunkX; X <= maxChunkX; X++) {
-                for (int Z = minChunkZ; Z <= maxChunkZ; Z++) {
-                    final Chunk chunk = world.getChunkAt(X, Z);
-                    for (BlockState state : chunk.getTileEntities()) {
-                        if (!(state instanceof CreatureSpawner)) continue;
+        new IslandChunkIterator(this).forEachRemaining(chunk -> {
+            for (BlockState state : chunk.getTileEntities()) {
+                if (!(state instanceof CreatureSpawner)) continue;
 
-                        final CreatureSpawner spawner = (CreatureSpawner) state;
-                        final Location location = spawner.getLocation();
-                        final double x = location.getX();
-                        final double z = location.getZ();
-                        if (x < minX || x > maxX || z < minZ || z > maxZ) continue;
+                final CreatureSpawner spawner = (CreatureSpawner) state;
+                final Location location = spawner.getLocation();
+                final double x = location.getX();
+                final double z = location.getZ();
+                if (x < minX || x > maxX || z < minZ || z > maxZ) continue;
 
-                        final EntityType type = spawner.getSpawnedType();
-                        final String typeName = type.name();
-                        final Double spawnerValue = spawnerValueMap.get(typeName);
-                        if (spawnerValue == null) continue;
+                final EntityType type = spawner.getSpawnedType();
+                final String typeName = type.name();
+                final Double spawnerValue = spawnerValueMap.get(typeName);
+                if (spawnerValue == null) continue;
 
-                        final int amount = (getSpawnerAmount == null) ? 1 : getSpawnerAmount.apply(spawner);
-                        spawners.compute(typeName, (name, original) -> {
-                            if (original == null) return amount;
-                            return original + amount;
-                        });
-                        
-                        value += (spawnerValue * amount);
-                    }
-                }
+                final int amount = (getSpawnerAmount == null) ? 1 : getSpawnerAmount.apply(spawner);
+                spawners.compute(typeName, (name, original) -> {
+                    if (original == null) return amount;
+                    return original + amount;
+                });
+
+                value.updateAndGet(v -> (double) (v + (spawnerValue * amount)));
             }
-        }
+        });
 
-        this.value = value;
-        if (startvalue == -1) startvalue = value;
-        
+        this.value = value.get();
+        if (startvalue == -1) startvalue = this.value;
+
         for (Mission mission : IridiumSkyblock.getMissions().missions) {
             missionLevels.putIfAbsent(mission.name, 1);
             if (mission.levels.get(missionLevels.get(mission.name)).type == MissionType.VALUE_INCREASE) {
-                setMission(mission.name, (int) (value - startvalue));
+                setMission(mission.name, (int) (value.get() - startvalue));
             }
         }
     }
