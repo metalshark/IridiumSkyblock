@@ -27,13 +27,12 @@ public class IslandManager {
     public Map<Integer, Island> islands = new HashMap<>();
     public Map<String, User> users = new HashMap<>();
     public Map<List<Integer>, Set<Integer>> islandCache = new HashMap<>();
+    public Location nextLocation;
 
     int length = 1;
     int current = 0;
 
     public Direction direction = Direction.NORTH;
-    public Location nextLocation;
-
     public int nextID = 1;
 
     public IslandManager() {
