@@ -49,6 +49,7 @@ public class ShopGUI extends GUI implements Listener {
 
     public void addPages() {
         for (Shop.ShopItem item : shop.items) {
+            if (item == null) continue;
             if (!shops.containsKey(item.page)) {
                 shops.put(item.page, new ShopGUI(shop, item.page, this));
             }
