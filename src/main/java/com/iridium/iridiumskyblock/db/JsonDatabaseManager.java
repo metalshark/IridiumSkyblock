@@ -3,7 +3,6 @@ package com.iridium.iridiumskyblock.db;
 import com.google.gson.Gson;
 import com.iridium.iridiumskyblock.*;
 import com.iridium.iridiumskyblock.iterators.IslandChunkKeyIterator;
-import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.jetbrains.annotations.NotNull;
@@ -142,25 +141,19 @@ public class JsonDatabaseManager extends DatabaseManager {
         }
     }
 
-    public static List<Integer> createChunkKey(Chunk chunk) {
-        return createChunkKey(chunk.getX(), chunk.getZ());
-    }
-    public static List<Integer> createChunkKey(int x, int z) {
+    public static @NotNull List<Integer> createChunkKey(int x, int z) {
         return Arrays.asList(x, z);
     }
-    public void addIslandToChunk(@NotNull Chunk chunk, @NotNull Island island) {
-        addIslandToChunk(createChunkKey(chunk), island);
-    }
+
     public void addIslandToChunk(@NotNull List<Integer> chunkKey, @NotNull Island island) {
         addIslandToChunk(chunkKey, island.getId());
     };
+
     public void addIslandToChunk(@NotNull List<Integer> chunkKey, int islandId) {
         getIslandIdsByChunk(chunkKey).add(islandId);
         save();
     }
-    public @NotNull Set<Island> getIslandsByChunk(@NotNull Chunk chunk) {
-        return getIslandsByChunk(createChunkKey(chunk));
-    }
+
     public @NotNull Set<Island> getIslandsByChunk(@NotNull List<Integer> chunkKey) {
         return getIslandIdsByChunk(chunkKey)
             .stream()
@@ -168,16 +161,12 @@ public class JsonDatabaseManager extends DatabaseManager {
             .filter(Objects::nonNull)
             .collect(Collectors.toSet());
     }
-    public @NotNull Set<Integer> getIslandIdsByChunk(@NotNull Chunk chunk) {
-        return getIslandIdsByChunk(createChunkKey(chunk));
-    }
+
     public @NotNull Set<Integer> getIslandIdsByChunk(@NotNull List<Integer> chunkKey) {
         assert dataModel.islandCache != null;
         return dataModel.islandCache.computeIfAbsent(chunkKey, key -> new HashSet<>());
     }
-    public void removeIslandFromChunk(@NotNull List<Integer> chunkKey, @NotNull Island island) {
-        removeIslandFromChunk(chunkKey, island.getId());
-    };
+
     public void removeIslandFromChunk(@NotNull List<Integer> chunkKey, int islandId) {
         getIslandIdsByChunk(chunkKey).remove(islandId);
     }

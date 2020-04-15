@@ -8,6 +8,7 @@ import com.iridium.iridiumskyblock.listeners.*;
 import com.iridium.iridiumskyblock.nms.NMS;
 import com.iridium.iridiumskyblock.placeholders.ClipPlaceholderAPIManager;
 import com.iridium.iridiumskyblock.placeholders.MVDWPlaceholderAPIManager;
+import com.iridium.iridiumskyblock.runnables.DailyRunnable;
 import com.iridium.iridiumskyblock.runnables.IslandValueRunnable;
 import com.iridium.iridiumskyblock.serializer.Persist;
 import com.iridium.iridiumskyblock.support.*;
@@ -19,6 +20,7 @@ import org.bukkit.generator.ChunkGenerator;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.*;
 import java.lang.reflect.Field;
@@ -26,13 +28,14 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.DayOfWeek;
-import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class IridiumSkyblock extends JavaPlugin {
 
-    @Getter @NotNull public static Config configuration;
+    @Getter @Nullable public static Config configuration;
     @Getter public static Messages messages;
     @Getter public static Missions missions;
     public static Upgrades upgrades;
@@ -68,6 +71,8 @@ public class IridiumSkyblock extends JavaPlugin {
     public static NMS nms;
 
     public static int blockspertick;
+
+    private ScheduledExecutorService dailyScheduler;
 
     public static Upgrades getUpgrades() {
         if (upgrades == null) {
@@ -215,6 +220,7 @@ public class IridiumSkyblock extends JavaPlugin {
         } catch (Exception e) {
             sendErrorMessage(e);
         }
+        dailyScheduler = Executors.newScheduledThreadPool(1);
     }
 
     public void getLanguages() {
@@ -299,6 +305,8 @@ public class IridiumSkyblock extends JavaPlugin {
     public void onDisable() {
         try {
             super.onDisable();
+
+            dailyScheduler.shutdown();
 
             saveData();
 
@@ -386,41 +394,17 @@ public class IridiumSkyblock extends JavaPlugin {
     }
 
     public void startCounting() {
-        Calendar c = Calendar.getInstance();
-        c.add(Calendar.DAY_OF_MONTH, 1);
-        c.set(Calendar.HOUR_OF_DAY, 0);
-        c.set(Calendar.MINUTE, 0);
-        c.set(Calendar.SECOND, 0);
-        c.set(Calendar.MILLISECOND, 0);
-        new Timer().schedule(new TimerTask() {
-            public void run() {
-                if (islandManager != null) {
-                    LocalDateTime ldt = LocalDateTime.now();
-                    if (ldt.getDayOfWeek().equals(DayOfWeek.MONDAY) && configuration.missionRestart.equals(MissionRestart.Weekly) || configuration.missionRestart.equals(MissionRestart.Daily)) {
-                        for (@NotNull Island island : databaseManager.getIslands()) {
-                            island.resetMissions();
-                        }
-                    }
-                    for (@NotNull Island island : databaseManager.getIslands()) {
-                        double cm = island.money;
-                        int cc = island.getCrystals();
-                        int ce = island.exp;
-                        island.money = Math.floor(island.money * (1 + (configuration.dailyMoneyInterest / 100.00)));
-                        island.setCrystals((int) Math.floor(island.getCrystals() * (1 + (configuration.dailyCrystalsInterest / 100.00))));
-                        island.exp = (int) Math.floor(island.exp * (1 + (configuration.dailyExpInterest / 100.00)));
-                        for (String member : island.getMembers()) {
-                            final Player p = Bukkit.getPlayer(User.getUser(member).name);
-                            if (p != null) {
-                                if (cm != island.money && cc != island.getCrystals() && ce != island.exp)
-                                    p.sendMessage(Utils.color(IridiumSkyblock.getMessages().islandInterest.replace("%exp%", island.exp - ce + "").replace("%crystals%", island.getCrystals() - cc + "").replace("%money%", island.money - cm + "").replace("%prefix%", IridiumSkyblock.configuration.prefix)));
-                            }
-                        }
-                    }
-                }
-                Bukkit.getScheduler().runTask(IridiumSkyblock.getInstance(), () -> startCounting());
-            }
+        final Runnable task = new DailyRunnable();
 
-        }, c.getTime());
+        final Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.DAY_OF_MONTH, 1);
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+        final long initalDelay = (calendar.getTimeInMillis() - System.currentTimeMillis()) / 1000;
+
+        dailyScheduler.scheduleAtFixedRate(task, initalDelay, TimeUnit.DAYS.toSeconds(1), TimeUnit.SECONDS);
     }
 
     public void islandValueManager() {

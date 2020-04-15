@@ -18,43 +18,47 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 public class IslandManager {
+
+    @NotNull private final Config config;
+    @NotNull private final DatabaseManager databaseManager;
 
     @Getter @Nullable private final World world;
     @Getter @Nullable private final World netherWorld;
 
     public IslandManager() {
-        @NotNull final Config config = IridiumSkyblock.getConfiguration();
-        @NotNull final String worldName = config.worldName;
-        @Nullable final World world = Bukkit.getWorld(worldName);
-        this.world = (world == null) ? makeWorld(Environment.NORMAL, worldName) : world;
-
-        if (config.netherIslands) {
-            @NotNull final String netherWorldName = config.netherWorldName;
-            @Nullable final World netherWorld = Bukkit.getWorld(netherWorldName);
-            this.netherWorld = (netherWorld == null) ? makeWorld(Environment.NETHER, netherWorldName) : netherWorld;
-        } else
-            netherWorld = null;
+        config = IridiumSkyblock.getConfiguration();
+        databaseManager = IridiumSkyblock.getDatabaseManager();
+        this.world = getOrCreateWorld(config.worldName, Environment.NORMAL);
+        this.netherWorld = (config.netherIslands) ? getOrCreateWorld(config.netherWorldName, Environment.NETHER) : null;
     }
 
-    private @Nullable World makeWorld(@NotNull Environment env, @NotNull String name) {
+    private @Nullable World createWorld(@NotNull Environment environment, @NotNull String name) {
         @NotNull final WorldCreator wc = new WorldCreator(name);
         wc.type(WorldType.FLAT);
         wc.generateStructures(false);
-        wc.generator(new SkyblockGenerator());
-        wc.environment(env);
+        @NotNull final SkyblockGenerator generator = new SkyblockGenerator();
+        wc.generator(generator);
+        wc.environment(environment);
         return wc.createWorld();
     }
 
-    public void createIsland(@NotNull Player player) {
-        @NotNull final Config config = IridiumSkyblock.getConfiguration();
+    private @NotNull World getOrCreateWorld(@NotNull String name, @NotNull Environment environment) {
+        @NotNull final String worldName = config.worldName;
+        @Nullable World world = Bukkit.getWorld(worldName);
+        if (world == null) world = createWorld(environment, worldName);
+        if (world == null)
+            throw new RuntimeException("Unable to get or create island world " + worldName);
+        world.getWorldBorder().setSize(Double.MAX_VALUE);
+        return world;
+    }
 
-        @NotNull final User user = User.getUser(player);
+    public void createIsland(@NotNull Player player) {
+        @Nullable final User user = User.getUser(player);
+        if (user == null) return;
         if (user.lastCreate != null
             && new Date().before(user.lastCreate)
             && config.createCooldown
@@ -80,7 +84,6 @@ public class IslandManager {
         calendar.add(Calendar.SECOND, config.regenCooldown);
         user.lastCreate = calendar.getTime();
 
-        @NotNull final DatabaseManager databaseManager = IridiumSkyblock.getDatabaseManager();
         @NotNull final Location nextLocation = databaseManager.getNextIslandLocation();
         @NotNull final Upgrades upgrades = IridiumSkyblock.getUpgrades();
         @NotNull final Upgrade sizeUpgrade = upgrades.sizeUpgrade;
@@ -119,19 +122,21 @@ public class IslandManager {
     public @Nullable Island getIslandViaLocation(@NotNull Location location) {
         if (!isIslandWorld(location)) return null;
 
-        @NotNull final DatabaseManager databaseManager = IridiumSkyblock.getDatabaseManager();
         final int x = (int) location.getX();
         final int z = (int) location.getZ();
         return databaseManager.getIslandByCoords(x, z);
     }
 
     public @Nullable Island getIslandViaId(int id) {
-        @NotNull final DatabaseManager databaseManager = IridiumSkyblock.getDatabaseManager();
         return databaseManager.getIslandById(id);
     }
 
+    public @NotNull Collection<Island> getIslands() {
+        return databaseManager.getIslands();
+    }
+
     public boolean isIslandWorld(@NotNull Location location) {
-        @NotNull final World world = location.getWorld();
+        @Nullable final World world = location.getWorld();
         if (world == null) return false;
         return isIslandWorld(world);
     }
@@ -142,12 +147,10 @@ public class IslandManager {
     }
 
     public boolean isIslandWorld(@NotNull String name) {
-        @NotNull final Config config = IridiumSkyblock.getConfiguration();
         return (name.equals(config.worldName) || (config.netherIslands && name.equals(config.netherWorldName)));
     }
 
     public void removeIsland(@NotNull Island island) {
-        @NotNull final DatabaseManager databaseManager = IridiumSkyblock.getDatabaseManager();
         databaseManager.removeIsland(island);
     }
 }

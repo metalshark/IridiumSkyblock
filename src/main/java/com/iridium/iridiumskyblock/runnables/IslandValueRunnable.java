@@ -5,6 +5,7 @@ import com.iridium.iridiumskyblock.Island;
 import com.iridium.iridiumskyblock.IslandManager;
 import com.iridium.iridiumskyblock.db.DatabaseManager;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -27,7 +28,7 @@ public class IslandValueRunnable implements Runnable {
                 id = islandIdsIterator.next();
             }
 
-            final Island island = islandManager.getIslandViaId(id);
+            @Nullable final Island island = islandManager.getIslandViaId(id);
             if (island == null) return;
 
             if (island.updating) return;

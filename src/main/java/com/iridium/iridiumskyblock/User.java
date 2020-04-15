@@ -1,5 +1,6 @@
 package com.iridium.iridiumskyblock;
 
+import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -53,17 +54,18 @@ public class User {
         return role;
     }
 
-    public static @Nullable User getUser(@NotNull String uuidString) {
+    public static @NotNull User getUser(@NotNull String uuidString) {
         @NotNull final UUID uuid = UUID.fromString(uuidString);
         return getUser(uuid);
     }
 
-    public static @Nullable User getUser(@NotNull OfflinePlayer offlinePlayer) {
+    public static @NotNull User getUser(@NotNull OfflinePlayer offlinePlayer) {
         return getUser(offlinePlayer.getUniqueId());
     }
 
-    public static @Nullable User getUser(@NotNull UUID uuid) {
-        return IridiumSkyblock.getDatabaseManager().getUserByUUID(uuid);
+    public static @NotNull User getUser(@NotNull UUID uuid) {
+        @Nullable final User user = IridiumSkyblock.getDatabaseManager().getUserByUUID(uuid);
+        return (user == null) ? new User(Bukkit.getOfflinePlayer(uuid)) : user;
     }
 
 }
