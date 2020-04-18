@@ -10,26 +10,31 @@ import org.bukkit.block.CreatureSpawner;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.SpawnerSpawnEvent;
+import org.bukkit.scheduler.BukkitScheduler;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class SpawnerSpawnListener implements Listener {
 
+    private static final @NotNull IslandManager islandManager = IridiumSkyblock.getIslandManager();
+    private static final @NotNull IridiumSkyblock plugin = IridiumSkyblock.getInstance();
+    private static final @NotNull BukkitScheduler scheduler = Bukkit.getScheduler();
+
     @EventHandler
+    @SuppressWarnings("unused")
     public void onSpawnerSpawn(@NotNull SpawnerSpawnEvent event) {
         try {
-            @NotNull final Location location = event.getLocation();
-            @NotNull final IslandManager islandManager = IridiumSkyblock.getIslandManager();
-            @Nullable final Island island = islandManager.getIslandViaLocation(location);
+            final @NotNull Location location = event.getLocation();
+            final @Nullable Island island = islandManager.getIslandByLocation(location);
             if (island == null) return;
 
             if (island.getSpawnerBooster() == 0) return;
 
-            @NotNull final CreatureSpawner spawner = event.getSpawner();
-            @NotNull final Runnable task = new BoostSpawnerRunnable(spawner);
-            Bukkit.getScheduler().scheduleSyncDelayedTask(IridiumSkyblock.getInstance(), task, 0);
+            final @NotNull CreatureSpawner spawner = event.getSpawner();
+            final @NotNull Runnable task = new BoostSpawnerRunnable(spawner);
+            scheduler.scheduleSyncDelayedTask(plugin, task, 0);
         } catch (Exception e) {
-            IridiumSkyblock.getInstance().sendErrorMessage(e);
+            plugin.sendErrorMessage(e);
         }
     }
 

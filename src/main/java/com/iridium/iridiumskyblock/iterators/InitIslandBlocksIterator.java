@@ -16,18 +16,18 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 
 public class InitIslandBlocksIterator implements Iterator<Long> {
-    @NotNull private final Config config = IridiumSkyblock.getConfiguration();
-    @NotNull private final IslandManager islandManager = IridiumSkyblock.getIslandManager();
-    @NotNull private final IridiumSkyblock plugin = IridiumSkyblock.getInstance();
+    private @NotNull final Config config = IridiumSkyblock.getConfiguration();
+    private @NotNull final IslandManager islandManager = IridiumSkyblock.getIslandManager();
+    private @NotNull final IridiumSkyblock plugin = IridiumSkyblock.getInstance();
 
-    @NotNull private final Island island;
+    private @NotNull final Island island;
 
     private final double islandMinX;
     private final double islandMinZ;
     private final double islandMaxX;
     private final double islandMaxZ;
 
-    @NotNull private World currentWorld;
+    private @NotNull World currentWorld;
     private double currentX;
     private double currentY;
     private double currentZ;
@@ -39,11 +39,11 @@ public class InitIslandBlocksIterator implements Iterator<Long> {
     public InitIslandBlocksIterator(@NotNull Island island) {
         this.island = island;
 
-        @NotNull final Location pos1 = island.getPos1();
+        final @NotNull Location pos1 = island.getPos1();
         islandMinX = pos1.getX();
         islandMinZ = pos1.getZ();
 
-        @NotNull final Location pos2 = island.getPos2();
+        final @NotNull Location pos2 = island.getPos2();
         islandMaxX = pos2.getX();
         islandMaxZ = pos2.getZ();
 
@@ -64,7 +64,7 @@ public class InitIslandBlocksIterator implements Iterator<Long> {
     }
 
     @Override
-    @NotNull public Long next() {
+    public @NotNull Long next() {
         if (currentX < islandMaxX) {
             currentX++;
         } else if (currentZ < islandMaxZ) {
@@ -83,11 +83,11 @@ public class InitIslandBlocksIterator implements Iterator<Long> {
             throw new NoSuchElementException();
         }
 
-        if (plugin.updatingBlocks) {
-            @NotNull final Location location = new Location(currentWorld, currentX, currentY, currentZ);
-            @NotNull final Block block = location.getBlock();
+        if (plugin.isUpdatingBlocks()) {
+            final @NotNull Location location = new Location(currentWorld, currentX, currentY, currentZ);
+            final @NotNull Block block = location.getBlock();
             if (Utils.isBlockValuable(block) && !(block.getState() instanceof CreatureSpawner))
-                island.tempValues.add(location);
+                island.addTempValue(location);
         }
 
         return currentBlock++;

@@ -2,6 +2,7 @@ package com.iridium.iridiumskyblock;
 
 import com.iridium.iridiumskyblock.commands.CommandManager;
 import com.iridium.iridiumskyblock.configs.*;
+import com.iridium.iridiumskyblock.configs.Missions.Mission;
 import com.iridium.iridiumskyblock.db.DatabaseManager;
 import com.iridium.iridiumskyblock.gui.*;
 import com.iridium.iridiumskyblock.listeners.*;
@@ -13,6 +14,7 @@ import com.iridium.iridiumskyblock.runnables.IslandValueRunnable;
 import com.iridium.iridiumskyblock.serializer.Persist;
 import com.iridium.iridiumskyblock.support.*;
 import lombok.Getter;
+import lombok.Setter;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
@@ -35,42 +37,42 @@ import java.util.concurrent.TimeUnit;
 
 public class IridiumSkyblock extends JavaPlugin {
 
-    @Getter @Nullable public static Config configuration;
-    @Getter public static Messages messages;
-    @Getter public static Missions missions;
-    public static Upgrades upgrades;
-    @Getter public static Boosters boosters;
-    @Getter public static Inventories inventories;
-    @Getter public static Schematics schematics;
-    @Getter public static Commands commands;
-    @Getter public static BlockValues blockValues;
-    @Getter public static Shop shop;
-    public static TopGUI topGUI;
-    @Getter public static ShopGUI shopGUI;
-    public static Border border;
-    public static Map<Integer, VisitGUI> visitGUI;
-    public static Map<Integer, List<String>> oreUpgradeCache = new HashMap<>();
-    public static Map<Integer, List<String>> netherOreUpgradeCache = new HashMap<>();
-    public static SkyblockGenerator generator;
-    public static WorldEdit worldEdit;
+    @Getter @Nullable private static Config configuration;
+    @Getter private static Messages messages;
+    private static Missions missions;
+    private static Upgrades upgrades;
+    @Getter private static Boosters boosters;
+    @Getter private static Inventories inventories;
+    @Getter private static Schematics schematics;
+    @Getter private static Commands commands;
+    @Getter private static BlockValues blockValues;
+    @Getter private static Shop shop;
+    private static TopGUI topGUI;
+    @Getter private static ShopGUI shopGUI;
+    @Getter private static Border border;
+    private static Map<Integer, VisitGUI> visitGUI;
+    private static Map<Integer, List<String>> oreUpgradeCache = new HashMap<>();
+    private static Map<Integer, List<String>> netherOreUpgradeCache = new HashMap<>();
+    private static SkyblockGenerator generator;
+    private static WorldEdit worldEdit;
     @Getter private static IridiumSkyblock instance;
     @Getter private static Persist persist;
 
-    @Getter public static IslandManager islandManager;
+    @Getter private static IslandManager islandManager;
     @Getter private static CommandManager commandManager;
     @Getter private static DatabaseManager databaseManager;
-    public Map<Schematics.FakeSchematic, Schematic> schems = new HashMap<>();
-    public Map<Schematics.FakeSchematic, Schematic> netherschems = new HashMap<>();
-    public boolean updatingBlocks = false;
-    public Map<String, String> languages = new HashMap<>();
-    public LanguagesGUI languagesGUI;
+    @Getter private Map<Schematics.FakeSchematic, Schematic> schems = new HashMap<>();
+    @Getter private Map<Schematics.FakeSchematic, Schematic> netherschems = new HashMap<>();
+    @Getter @Setter private boolean updatingBlocks = false;
+    private Map<String, String> languages = new HashMap<>();
+    private LanguagesGUI languagesGUI;
     @Getter private String latest;
 
-    public Map<UUID, Island> entities = new HashMap<>();
+    private Map<UUID, Island> entities = new HashMap<>();
 
-    public static NMS nms;
+    @Getter private static NMS nms;
 
-    public static int blockspertick;
+    @Getter @Setter private static int blocksPerTick;
 
     private ScheduledExecutorService dailyScheduler;
 
@@ -85,7 +87,7 @@ public class IridiumSkyblock extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        blockspertick = -1;
+        blocksPerTick = -1;
         try {
             nms = (NMS) Class.forName("com.iridium.iridiumskyblock.nms." + Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3]).newInstance();
         } catch (ClassNotFoundException e) {
@@ -642,4 +644,25 @@ public class IridiumSkyblock extends JavaPlugin {
             if (border != null) persist.save(border);
         });
     }
+
+    public static @Nullable Mission getMission(@NotNull String name) {
+        for (final @NotNull Mission mission : missions.missions) {
+            if (!mission.name.equals(name)) continue;
+            return mission;
+        }
+        return null;
+    }
+
+    public static @NotNull Set<Mission> getMissions() {
+        return Collections.unmodifiableSet(new HashSet<>(missions.missions));
+    }
+
+    public static @NotNull List<String> getOreUpgrades(int level) {
+        return oreUpgradeCache.get(level);
+    }
+
+    public static @NotNull List<String> getNetherOreUpgrades(int level) {
+        return netherOreUpgradeCache.get(level);
+    }
+
 }

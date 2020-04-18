@@ -14,30 +14,33 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerExpChangeEvent;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 
 public class PlayerExpChangeListener implements Listener {
 
+    private static final @NotNull IslandManager islandManager = IridiumSkyblock.getIslandManager();
+
     @EventHandler
+    @SuppressWarnings("unused")
     public void onPlayerExpChange(@NotNull PlayerExpChangeEvent event) {
         try {
-            @NotNull final Player player = event.getPlayer();
-            @NotNull final Location location = player.getLocation();
-            @NotNull final IslandManager islandManager = IridiumSkyblock.getIslandManager();
-            if (!islandManager.isIslandWorld(location)) return;
+            final @NotNull Player player = event.getPlayer();
+            final @NotNull Location location = player.getLocation();
+            if (!islandManager.isIslandWorldLocation(location)) return;
 
-            @NotNull final User user = User.getUser(player);
-            @NotNull final Island island = user.getIsland();
+            final @NotNull User user = User.getUser(player);
+            final @Nullable Island island = user.getIsland();
             if (island == null) return;
 
-            for (@NotNull Mission mission : IridiumSkyblock.getMissions().missions) {
-                @NotNull final Map<String, Integer> levels = island.getMissionLevels();
-                levels.putIfAbsent(mission.name, 1);
+            for (final @NotNull Mission mission : IridiumSkyblock.getMissions()) {
+                final @NotNull String missionName = mission.name;
+                final @Nullable MissionData level = island.getMissionLevel(missionName);
+                if (level == null) continue;
+                if (level.type != MissionType.EXPERIENCE) continue;
 
-                @NotNull final MissionData level = mission.levels.get(levels.get(mission.name));
-                if (level.type == MissionType.EXPERIENCE)
-                    island.addMission(mission.name, event.getAmount());
+                island.addMissionAmount(mission.name, event.getAmount());
             }
         } catch (Exception e) {
             IridiumSkyblock.getInstance().sendErrorMessage(e);

@@ -5,53 +5,62 @@ import com.iridium.iridiumskyblock.Island;
 import com.iridium.iridiumskyblock.IslandManager;
 import com.iridium.iridiumskyblock.User;
 import com.iridium.iridiumskyblock.Utils;
+import com.iridium.iridiumskyblock.configs.Config;
+import com.iridium.iridiumskyblock.runnables.SendIslandBorderRunnable;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.scheduler.BukkitScheduler;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class PlayerJoinLeaveListener implements Listener {
 
+    private static final @NotNull Config config = IridiumSkyblock.getConfiguration();
+    private static final @NotNull IslandManager islandManager = IridiumSkyblock.getIslandManager();
+    private static final @NotNull IridiumSkyblock plugin = IridiumSkyblock.getInstance();
+    private static final @NotNull BukkitScheduler scheduler = Bukkit.getScheduler();
+
     @EventHandler
+    @SuppressWarnings("unused")
     public void onJoin(@NotNull PlayerJoinEvent event) {
         try {
-            @NotNull final Player player = event.getPlayer();
-            @NotNull final IridiumSkyblock plugin = IridiumSkyblock.getInstance();
+            final @NotNull Player player = event.getPlayer();
             if (player.isOp()) {
-                @NotNull final String latest = plugin.getLatest();
+                final @NotNull String latest = plugin.getLatest();
                 if (plugin.getLatest() != null
-                        && IridiumSkyblock.getConfiguration().notifyAvailableUpdate
+                        && config.notifyAvailableUpdate
                         && !latest.equals(plugin.getDescription().getVersion())) {
-                    @NotNull final String prefix = IridiumSkyblock.getConfiguration().prefix;
+                    final @NotNull String prefix = config.prefix;
                     player.sendMessage(Utils.color(prefix + " &7This message is only seen by opped players."));
                     player.sendMessage(Utils.color(prefix + " &7Newer version available: " + latest));
                 }
             }
 
-            @NotNull final Location location = player.getLocation();
-            @NotNull final IslandManager islandManager = IridiumSkyblock.getIslandManager();
-            if (!islandManager.isIslandWorld(location)) return;
+            final @NotNull Location location = player.getLocation();
+            if (!islandManager.isIslandWorldLocation(location)) return;
 
-            @NotNull final User user = User.getUser(player);
-            user.name = player.getName();
+            final @NotNull User user = User.getUser(player);
+            user.setName(player.getName());
 
-            if (user.flying && (user.getIsland() == null || user.getIsland().getFlightBooster() == 0)) {
+            if (user.isFlying() && (user.getIsland() == null || user.getIsland().getFlightBooster() == 0)) {
                 player.setAllowFlight(false);
                 player.setFlying(false);
-                user.flying = false;
+                user.setFlying(false);
             }
-            user.bypassing = false;
+            user.setBypassing(false);
 
-            @Nullable final Island island = islandManager.getIslandViaLocation(location);
+            final @Nullable Island island = islandManager.getIslandByLocation(location);
             if (island == null) return;
 
-            Bukkit.getScheduler().runTaskLater(plugin, () -> island.sendBorder(player), 1);
+            final @NotNull Runnable task = new SendIslandBorderRunnable(island, player);
+            scheduler.runTaskLater(plugin, task, 1);
         } catch (Exception e) {
             IridiumSkyblock.getInstance().sendErrorMessage(e);
         }
     }
+
 }

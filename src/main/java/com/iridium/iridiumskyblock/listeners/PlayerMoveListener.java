@@ -22,58 +22,54 @@ import org.jetbrains.annotations.Nullable;
 
 public class PlayerMoveListener implements Listener {
 
+    private static final @NotNull Config config = IridiumSkyblock.getConfiguration();
+    private static final @NotNull IslandManager islandManager = IridiumSkyblock.getIslandManager();
+
     @EventHandler
+    @SuppressWarnings("unused")
     public void onPlayerMove(@NotNull PlayerMoveEvent event) {
         try {
-            @NotNull final Player player = event.getPlayer();
-            @NotNull final Location location = player.getLocation();
-            @NotNull final IslandManager islandManager = IridiumSkyblock.getIslandManager();
-            if (!islandManager.isIslandWorld(location)) return;
+            final @NotNull Player player = event.getPlayer();
+            final @NotNull Location location = player.getLocation();
+            if (!islandManager.isIslandWorldLocation(location)) return;
 
-            @NotNull final Config config = IridiumSkyblock.getConfiguration();
-
+            // Handle the player falling out the world
             if (location.getY() < 0 && config.voidTeleport) {
-                @Nullable final Island island = islandManager.getIslandViaLocation(location);
-                @Nullable final World world = location.getWorld();
+                final @Nullable Island island = islandManager.getIslandByLocation(location);
+                final @Nullable World world = location.getWorld();
                 if (world == null) return;
 
                 if (island != null) {
                     if (world.getName().equals(config.worldName))
                         island.teleportHome(player);
-                    else
+                    else if (world.getName().equals(config.netherWorldName))
                         island.teleportNetherHome(player);
                 } else {
-                    @NotNull final User user = User.getUser(player);
+                    final @NotNull User user = User.getUser(player);
                     if (user.getIsland() != null) {
                         if (world.getName().equals(config.worldName))
                             user.getIsland().teleportHome(player);
                         else if (world.getName().equals(config.netherWorldName))
                             user.getIsland().teleportNetherHome(player);
                     } else if (islandManager.isIslandWorld(world)) {
-                        if (Bukkit.getPluginManager().isPluginEnabled("EssentialsSpawn")) {
-                            @NotNull final PluginManager pluginManager = Bukkit.getPluginManager();
-                            @Nullable final EssentialsSpawn essentialsSpawn = (EssentialsSpawn) pluginManager.getPlugin("EssentialsSpawn");
-                            @Nullable final Essentials essentials = (Essentials) pluginManager.getPlugin("Essentials");
-                            if (essentials != null && essentialsSpawn != null)
-                                player.teleport(essentialsSpawn.getSpawn(essentials.getUser(player).getGroup()));
-                        } else
-                            player.teleport(Bukkit.getWorlds().get(0).getSpawnLocation());
+                        @NotNull final Location spawnLocation = islandManager.getSpawnLocation(player);
+                        player.teleport(spawnLocation);
                     }
                 }
             }
 
-            @NotNull final User user = User.getUser(player);
-            @NotNull final Island island = user.getIsland();
+            final @NotNull User user = User.getUser(player);
+            final @Nullable Island island = user.getIsland();
             if (island == null) return;
 
-            if (user.flying
-                    && (!island.isInIsland(location) || island.getFlightBooster() == 0)
+            if (user.isFlying()
+                    && (!island.isLocationInIsland(location) || island.getFlightBooster() == 0)
                     && !player.getGameMode().equals(GameMode.CREATIVE)
                     && !(player.hasPermission("IridiumSkyblock.Fly")
                         || player.hasPermission("iridiumskyblock.fly"))) {
                 player.setAllowFlight(false);
                 player.setFlying(false);
-                user.flying = false;
+                user.setFlying(false);
                 player.sendMessage(Utils.color(IridiumSkyblock.getMessages().flightDisabled
                         .replace("%prefix%", config.prefix)));
             }
@@ -81,4 +77,5 @@ public class PlayerMoveListener implements Listener {
             IridiumSkyblock.getInstance().sendErrorMessage(e);
         }
     }
+
 }

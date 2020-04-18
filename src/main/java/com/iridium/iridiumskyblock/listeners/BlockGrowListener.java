@@ -18,24 +18,26 @@ import org.jetbrains.annotations.Nullable;
 
 public class BlockGrowListener implements Listener {
 
+    private static final @NotNull IslandManager islandManager = IridiumSkyblock.getIslandManager();
+
     @EventHandler
+    @SuppressWarnings("unused")
     public void onBlockGrow(@NotNull BlockGrowEvent event) {
         try {
-            @NotNull final Block block = event.getBlock();
-            @NotNull final Location location = block.getLocation();
-            @NotNull final IslandManager islandManager = IridiumSkyblock.getIslandManager();
-            @Nullable final Island island = islandManager.getIslandViaLocation(location);
+            final @NotNull Block block = event.getBlock();
+            final @NotNull Location location = block.getLocation();
+            final @Nullable Island island = islandManager.getIslandByLocation(location);
             if (island == null) return;
 
             if (island.getFarmingBooster() == 0) return;
 
-            @NotNull final Material material = block.getType();
+            final @NotNull Material material = block.getType();
             if (!XBlock.isCrops(material)) return;
 
             event.setCancelled(true);
 
-            @NotNull final Crops crops = new Crops(CropState.RIPE);
-            @NotNull final BlockState blockState = block.getState();
+            final @NotNull Crops crops = new Crops(CropState.RIPE);
+            final @NotNull BlockState blockState = block.getState();
             blockState.setData(crops);
             blockState.update();
         } catch (Exception e) {

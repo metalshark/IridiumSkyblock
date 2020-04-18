@@ -15,18 +15,19 @@ import org.jetbrains.annotations.Nullable;
 
 public class EntityPickupItemListener implements Listener {
 
+    private static final @NotNull IslandManager islandManager = IridiumSkyblock.getIslandManager();
+
     @EventHandler
+    @SuppressWarnings("unused")
     public void onEntityPickupItem(@NotNull PlayerPickupItemEvent event) {
         try {
-            @NotNull final Item item = event.getItem();
-            @NotNull final Location location = item.getLocation();
-            @NotNull final IslandManager islandManager = IridiumSkyblock.getIslandManager();
-            @Nullable final Island island = islandManager.getIslandViaLocation(location);
+            final @NotNull Item item = event.getItem();
+            final @Nullable Island island = islandManager.getIslandByItem(item);
             if (island == null) return;
 
-            @NotNull final Player player = event.getPlayer();
-            @NotNull final User user = User.getUser(player);
-            if (!island.getPermissions(user).pickupItems)
+            final @NotNull Player player = event.getPlayer();
+            final @NotNull User user = User.getUser(player);
+            if (!island.getPermissionsByUser(user).pickupItems)
                 event.setCancelled(true);
         } catch (Exception ex) {
             IridiumSkyblock.getInstance().sendErrorMessage(ex);

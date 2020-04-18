@@ -1,7 +1,12 @@
 package com.iridium.iridiumskyblock;
 
+import com.iridium.iridiumskyblock.Island.Warp;
+import com.iridium.iridiumskyblock.db.DatabaseManager;
+import lombok.Getter;
+import lombok.Setter;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -12,46 +17,81 @@ import java.util.UUID;
 
 public class User {
 
-    public String player;
-    public String name;
-    public int islandID;
-    public Role role;
-    public Set<Integer> invites;
-    public Island.Warp warp;
-    public boolean bypassing;
-    public boolean islandChat;
-    public boolean flying;
-    public transient boolean teleportingHome;
-    public Date lastCreate;
+    @NotNull private static DatabaseManager databaseManager = IridiumSkyblock.getDatabaseManager();
+    @NotNull private static IslandManager islandManager = IridiumSkyblock.getIslandManager();
 
-    public User(OfflinePlayer p) {
+    @Getter private final @NotNull UUID uuid;
+    @Getter @Setter private @Nullable String name;
+    @Getter @Setter private int islandId;
+    @Getter private @Nullable Role role;
+    private final @NotNull Set<Integer> invites;
+    @Getter @Setter private @Nullable Warp warp;
+    @Getter private boolean bypassing;
+    @Getter private boolean islandChatEnabled;
+    @Getter @Setter private boolean flying;
+    @Getter @Setter private boolean teleportingHome;
+    @Getter @Setter private @Nullable Date lastCreate;
+
+    public User(@NotNull OfflinePlayer offlinePlayer) {
+        uuid = offlinePlayer.getUniqueId();
+        name = offlinePlayer.getName();
+        islandId = 0;
+        role = null;
         invites = new HashSet<>();
-        this.player = p.getUniqueId().toString();
-        this.name = p.getName();
-        this.islandID = 0;
-        bypassing = false;
-        islandChat = false;
+        warp = null;
+        islandChatEnabled = false;
         flying = false;
+        teleportingHome = false;
+        lastCreate = null;
         IridiumSkyblock.getDatabaseManager().addUser(this);
     }
 
-    @Nullable public Island getIsland() {
-        return IridiumSkyblock.getIslandManager().getIslandViaId(islandID);
+    public User(@NotNull OfflinePlayer offlinePlayer, int islandId, @Nullable Role role, @NotNull Set<Integer> invites,
+                @Nullable Warp warp, boolean bypassing, boolean islandChat, boolean flying, boolean teleportingHome,
+                @Nullable Date lastCreate) {
+        this.uuid = offlinePlayer.getUniqueId();
+        this.name = offlinePlayer.getName();
+        this.islandId = islandId;
+        this.role = role;
+        this.invites = invites;
+        this.warp = warp;
+        this.bypassing = bypassing;
+        this.islandChatEnabled = islandChat;
+        this.flying = flying;
+        this.teleportingHome = teleportingHome;
+        this.lastCreate = lastCreate;
     }
 
-    @NotNull public Role getRole() {
+    public @Nullable Island getIsland() {
+        return islandManager.getIslandById(islandId);
+    }
+
+    public @NotNull Role getRole() {
         if (role == null) {
-            if (getIsland() != null) {
-                if (getIsland().getOwner().equals(player)) {
-                    role = Role.Owner;
-                } else {
-                    role = Role.Member;
-                }
-            } else {
+            final @Nullable Island island = getIsland();
+            if (island == null)
                 role = Role.Visitor;
-            }
+            else if (island.getOwner().equals(uuid))
+                role = Role.Owner;
+            else
+                role = Role.Member;
+            databaseManager.updateUser(this);
         }
         return role;
+    }
+
+    public void setRole(@NotNull Role role) {
+        this.role = role;
+        databaseManager.updateUser(this);
+    }
+
+    public void setBypassing(boolean bypassing) {
+        this.bypassing = bypassing;
+        databaseManager.updateUser(this);
+    }
+
+    public @Nullable Player getPlayer() {
+        return Bukkit.getPlayer(uuid);
     }
 
     public static @NotNull User getUser(@NotNull String uuidString) {
@@ -64,8 +104,16 @@ public class User {
     }
 
     public static @NotNull User getUser(@NotNull UUID uuid) {
-        @Nullable final User user = IridiumSkyblock.getDatabaseManager().getUserByUUID(uuid);
-        return (user == null) ? new User(Bukkit.getOfflinePlayer(uuid)) : user;
+        @Nullable User user = IridiumSkyblock.getDatabaseManager().getUserByUUID(uuid);
+        if (user == null) {
+            final @NotNull OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(uuid);
+            user = new User(offlinePlayer);
+        }
+        return user;
+    }
+
+    public void clearInvites() {
+        invites.clear();
     }
 
 }

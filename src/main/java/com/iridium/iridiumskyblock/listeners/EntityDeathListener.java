@@ -7,8 +7,6 @@ import com.iridium.iridiumskyblock.Island;
 import com.iridium.iridiumskyblock.IslandManager;
 import com.iridium.iridiumskyblock.MissionType;
 import com.iridium.iridiumskyblock.User;
-import org.bukkit.Location;
-import org.bukkit.World;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -18,35 +16,33 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
-import java.util.Map;
 
 public class EntityDeathListener implements Listener {
 
+    private static final @NotNull IslandManager islandManager = IridiumSkyblock.getIslandManager();
+
     @EventHandler
+    @SuppressWarnings("unused")
     public void onEntityDeath(@NotNull EntityDeathEvent event) {
         try {
-            @NotNull final LivingEntity entity = event.getEntity();
-            @Nullable final Player killer = entity.getKiller();
+            final @NotNull LivingEntity entity = event.getEntity();
+            final @Nullable Player killer = entity.getKiller();
             if (killer == null) return;
 
-            @NotNull final Location location = killer.getLocation();
-            @NotNull final IslandManager islandManager = IridiumSkyblock.getIslandManager();
-            if (!islandManager.isIslandWorld(location)) return;
+            if (!islandManager.isIslandWorldEntity(killer)) return;
 
-            @NotNull final User user = User.getUser(killer);
-            @NotNull final Island userIsland = user.getIsland();
+            final @NotNull User user = User.getUser(killer);
+            final @Nullable Island userIsland = user.getIsland();
             if (userIsland == null) return;
 
-            for (@NotNull Mission mission : IridiumSkyblock.getMissions().missions) {
-                @NotNull final Map<String, Integer> levels = userIsland.getMissionLevels();
-                levels.putIfAbsent(mission.name, 1);
-
-                @NotNull final MissionData level = mission.levels.get(levels.get(mission.name));
+            for (final @NotNull Mission mission : IridiumSkyblock.getMissions()) {
+                final @Nullable MissionData level = userIsland.getMissionLevel(mission.name);
+                if (level == null) continue;
                 if (level.type != MissionType.ENTITY_KILL) continue;
 
-                @NotNull final List<String> conditions = level.conditions;
+                final @NotNull List<String> conditions = level.conditions;
                 if (conditions.isEmpty() || conditions.contains(entity.toString()))
-                    userIsland.addMission(mission.name, 1);
+                    userIsland.addMissionAmount(mission.name, 1);
             }
 
             if (userIsland.getExpBooster() != 0)

@@ -327,9 +327,9 @@ public class Utils {
                 new Placeholder("flightbooster_vaultcost", IridiumSkyblock.getBoosters().flightBooster.vaultCost + ""),
 
                 //Bank
-                new Placeholder("experience", island.exp + ""),
+                new Placeholder("experience", island.getExperience() + ""),
                 new Placeholder("crystals", island.getCrystals() + ""),
-                new Placeholder("money", island.money + ""),
+                new Placeholder("money", island.getMoney() + ""),
                 new Placeholder("value", island.getValue() + "")
         ));
         return placeholders;
@@ -367,7 +367,7 @@ public class Utils {
         if (u.getIsland() != null) {
             u.getIsland().setCrystals(u.getIsland().getCrystals() + crystals);
             if (Vault.econ == null) {
-                u.getIsland().money += vault;
+                u.getIsland().setMoney(u.getIsland().getMoney() + vault);
             } else {
                 Vault.econ.depositPlayer(p, vault);
             }
@@ -390,8 +390,8 @@ public class Utils {
                     return true;
                 }
             }
-            if (u.getIsland().money >= vault && u.getIsland().getCrystals() >= crystals) {
-                u.getIsland().money -= vault;
+            if (u.getIsland().getMoney() >= vault && u.getIsland().getCrystals() >= crystals) {
+                u.getIsland().setMoney(u.getIslandId() - vault);
                 u.getIsland().setCrystals(u.getIsland().getCrystals() - crystals);
                 return true;
             }
