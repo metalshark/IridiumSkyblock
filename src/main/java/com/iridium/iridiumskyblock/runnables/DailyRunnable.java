@@ -18,43 +18,43 @@ import java.time.LocalDateTime;
 
 public class DailyRunnable implements Runnable {
 
-    @NotNull private final Config config = IridiumSkyblock.getConfiguration();
-    @NotNull private final IslandManager islandManager = IridiumSkyblock.getIslandManager();
-    @NotNull private final Messages messages = IridiumSkyblock.getMessages();
+    private static final @NotNull Config config = IridiumSkyblock.getConfiguration();
+    private static final @NotNull IslandManager islandManager = IridiumSkyblock.getIslandManager();
+    private static final @NotNull Messages messages = IridiumSkyblock.getMessages();
 
     @Override
     public void run() {
-        @NotNull final LocalDateTime localDateTime = LocalDateTime.now();
+        final @NotNull LocalDateTime localDateTime = LocalDateTime.now();
         final boolean resetMissions = config.missionRestart.equals(MissionRestart.Daily) ||
                 (config.missionRestart.equals(MissionRestart.Weekly)
                         && localDateTime.getDayOfWeek().equals(DayOfWeek.MONDAY));
 
-        for (@NotNull final Island island : islandManager.getIslands()) {
+        for (final @NotNull Island island : islandManager.getIslands()) {
             if (resetMissions) island.resetMissions();
 
-            final double money = island.money;
+            final double money = island.getMoney();
             final double moneyInterest = Math.floor(money * (config.dailyMoneyInterest / 100));
-            island.money = money + moneyInterest;
+            island.setMoney(money + moneyInterest);
 
             final int crystals = island.getCrystals();
             final int crystalsInterest = (int) Math.floor(crystals * (config.dailyCrystalsInterest / 100));
             island.setCrystals(crystals + crystalsInterest);
 
-            final int experience = island.exp;
+            final int experience = island.getExperience();
             final int experienceInterest = (int) Math.floor(experience * (config.dailyExpInterest / 100));
-            island.exp = experience + experienceInterest;
+            island.setExperience(experience + experienceInterest);
 
-            for (@NotNull final String member : island.getMembers()) {
-                @NotNull final User memberUser = User.getUser(member);
-                @Nullable final Player memberPlayer = Bukkit.getPlayer(memberUser.name);
+            if (moneyInterest == 0 && crystalsInterest == 0 && experienceInterest == 0) continue;
+
+            for (final @NotNull User member : island.getMembers()) {
+                final @Nullable Player memberPlayer = member.getPlayer();
                 if (memberPlayer == null) continue;
 
-                if (moneyInterest != 0 || crystalsInterest != 0 && experienceInterest != 0)
-                    memberPlayer.sendMessage(Utils.color(messages.islandInterest
-                            .replace("%exp%", Integer.toString(experienceInterest))
-                            .replace("%crystals%", Integer.toString(crystalsInterest))
-                            .replace("%money%", Double.toString(moneyInterest))
-                            .replace("%prefix%", config.prefix)));
+                memberPlayer.sendMessage(Utils.color(messages.islandInterest
+                        .replace("%exp%", Integer.toString(experienceInterest))
+                        .replace("%crystals%", Integer.toString(crystalsInterest))
+                        .replace("%money%", Double.toString(moneyInterest))
+                        .replace("%prefix%", config.prefix)));
             }
         }
     }

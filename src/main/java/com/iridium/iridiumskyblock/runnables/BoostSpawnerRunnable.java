@@ -7,7 +7,7 @@ import org.jetbrains.annotations.NotNull;
 @RequiredArgsConstructor
 public class BoostSpawnerRunnable implements Runnable {
 
-    @NotNull private final CreatureSpawner spawner;
+    private final @NotNull CreatureSpawner spawner;
 
     @Override
     public void run() {

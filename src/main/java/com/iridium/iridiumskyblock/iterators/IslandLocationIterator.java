@@ -7,14 +7,23 @@ import lombok.Getter;
 import org.bukkit.Location;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 public class IslandLocationIterator implements Iterator<Location> {
-    @NotNull private final Config config = IridiumSkyblock.getConfiguration();
-    private final int distance = config.distance;
+    private static final @NotNull Config config = IridiumSkyblock.getConfiguration();
+    private static final int distance = config.distance;
+    private static final @NotNull Map<Direction, int[]> directionOffsets = Collections.unmodifiableMap(new HashMap<Direction, int[]>(){{
+        put(Direction.NORTH, new int[]{distance, 0, 0});
+        put(Direction.EAST, new int[]{0, 0, distance});
+        put(Direction.SOUTH, new int[]{-distance, 0, 0});
+        put(Direction.WEST, new int[]{0, 0, -distance});
+    }});
 
-    @Getter @NotNull private final Location location;
-    @Getter @NotNull private Direction direction;
+    @Getter private final @NotNull Location location;
+    @Getter private @NotNull Direction direction;
     @Getter private int countInDirection;
     @Getter private int maxInDirection;
 
@@ -31,22 +40,9 @@ public class IslandLocationIterator implements Iterator<Location> {
     }
 
     @Override
-    @NotNull public Location next() {
-        switch (direction) {
-            case NORTH:
-                location.add(distance, 0, 0);
-                break;
-            case EAST:
-                location.add(0, 0, distance);
-                break;
-            case SOUTH:
-                location.subtract(distance, 0, 0);
-                break;
-            case WEST:
-                location.subtract(0, 0, distance);
-                break;
-        }
-
+    public @NotNull Location next() {
+        final @NotNull int[] directionOffset = directionOffsets.get(direction);
+        location.add(directionOffset[0], directionOffset[1], directionOffset[2]);
         countInDirection++;
 
         if (countInDirection == maxInDirection) {

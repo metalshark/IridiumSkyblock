@@ -7,6 +7,7 @@ import com.iridium.iridiumskyblock.configs.Config;
 import org.bukkit.Chunk;
 import org.bukkit.World;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.HashSet;
 import java.util.Iterator;
@@ -16,25 +17,22 @@ import java.util.Set;
 
 public class IslandChunkIterator implements Iterator<Chunk> {
 
-    @NotNull private final Iterator<World> worldsIterator;
-    @NotNull private World world;
+    private static final @NotNull Config config = IridiumSkyblock.getConfiguration();
+    private static final @NotNull IslandManager islandManager = IridiumSkyblock.getIslandManager();
 
-    @NotNull private final IslandChunkKeyIterator chunkKeyIterator;
+    private final @NotNull Iterator<World> worldsIterator;
+    private @NotNull World world;
+
+    private final @NotNull IslandChunkKeyIterator chunkKeyIterator;
 
     public IslandChunkIterator(@NotNull Island island) {
-        @NotNull final Config config = IridiumSkyblock.getConfiguration();
-        @NotNull final IslandManager islandManager = IridiumSkyblock.getIslandManager();
-
-        @NotNull final Set<World> worlds = new HashSet<>();
-        @NotNull final World islandWorld = Objects.requireNonNull(islandManager.getWorld());
-        worlds.add(islandWorld);
-        if (config.netherIslands) {
-            final World netherIslandWorld = islandManager.getNetherWorld();
-            worlds.add(netherIslandWorld);
-        }
+        final @NotNull Set<World> worlds = new HashSet<World>(){{
+            add(islandManager.getWorld());
+        }};
+        if (config.netherIslands)
+            worlds.add(islandManager.getNetherWorld());
         worldsIterator = worlds.iterator();
         world = worldsIterator.next();
-
         chunkKeyIterator = new IslandChunkKeyIterator(island);
     }
 
@@ -44,15 +42,12 @@ public class IslandChunkIterator implements Iterator<Chunk> {
     }
 
     @Override
-    @NotNull public Chunk next() {
-        int[] chunkKey;
-        try {
-            chunkKey = chunkKeyIterator.next();
-        } catch (NoSuchElementException ignored) {
-            world = worldsIterator.next();
+    public @NotNull Chunk next() {
+        if (!chunkKeyIterator.hasNext()) {
+            world = worldsIterator.next(); // Will throw NoSuchElement exception when we run out of worlds
             chunkKeyIterator.init();
-            chunkKey = chunkKeyIterator.next();
         }
+        final @NotNull int[] chunkKey = chunkKeyIterator.next();
         final int x = chunkKey[0];
         final int z = chunkKey[1];
         return world.getChunkAt(x, z);

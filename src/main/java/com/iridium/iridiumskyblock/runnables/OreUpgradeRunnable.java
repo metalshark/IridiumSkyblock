@@ -17,19 +17,19 @@ import java.util.Random;
 @RequiredArgsConstructor
 public class OreUpgradeRunnable implements Runnable {
 
-    @NotNull final private Block toBlock;
-    @NotNull final private List<String> oreUpgrades;
-    @NotNull final private Material material;
-    @NotNull final private Island island;
-    @NotNull final private Location location;
+    final private @NotNull Block toBlock;
+    final private @NotNull List<String> oreUpgrades;
+    final private @NotNull Material material;
+    final private @NotNull Island island;
+    final private @NotNull Location location;
 
     @Override
     public void run() {
-        @NotNull final Random random = new Random();
-        @NotNull final String oreUpgrade = oreUpgrades.get(random.nextInt(oreUpgrades.size()));
+        final @NotNull Random random = new Random();
+        final @NotNull String oreUpgrade = oreUpgrades.get(random.nextInt(oreUpgrades.size()));
 
-        @NotNull final XMaterial oreUpgradeXmaterial = XMaterial.valueOf(oreUpgrade);
-        @Nullable final Material oreUpgradeMaterial = oreUpgradeXmaterial.parseMaterial(true);
+        final @NotNull XMaterial oreUpgradeXmaterial = XMaterial.valueOf(oreUpgrade);
+        final @Nullable Material oreUpgradeMaterial = oreUpgradeXmaterial.parseMaterial(true);
         if (oreUpgradeMaterial == null) return;
 
         toBlock.setType(oreUpgradeMaterial);
@@ -38,14 +38,11 @@ public class OreUpgradeRunnable implements Runnable {
         blockState.update(true);
 
         if (!Utils.isBlockValuable(toBlock)) return;
-        @NotNull final XMaterial xmaterial = XMaterial.matchXMaterial(material);
-        island.valuableBlocks.compute(xmaterial.name(), (name, original) -> {
-            if (original == null) return 1;
-            return original + 1;
-        });
-        if (island.updating)
-            island.tempValues.add(location);
-        island.calculateIslandValue();
+
+        island.addTempValue(location);
+        if (island.isUpdating())
+            island.addTempValue(location);
+        island.calculateValue();
     }
 
 }

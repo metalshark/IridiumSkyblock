@@ -749,16 +749,6 @@ public class Island {
         boosterid = -1;
     }
 
-    public void removeBan(@NotNull User user) {
-        if (bans == null) bans = new HashSet<>();
-        bans.remove(user);
-    }
-
-    public void addBan(@NotNull User user) {
-        if (bans == null) bans = new HashSet<>();
-        bans.add(user);
-    }
-
     public void removeVote(@NotNull User user) {
         if (votes == null) votes = new HashSet<>();
         votes.remove(user);
@@ -777,98 +767,6 @@ public class Island {
     public int getVotes() {
         if (votes == null) votes = new HashSet<>();
         return votes.size();
-    }
-
-    public boolean isBanned(@NotNull User user) {
-        if (bans == null) bans = new HashSet<>();
-        return bans.contains(user.getPlayer());
-    }
-
-    public void addCoop(@NotNull Island island) {
-        if (coop == null) coop = new HashSet<>();
-        for (final @NotNull User member : island.getMembers()) {
-            Player pl = member.getPlayer();
-            if (pl != null) {
-                pl.sendMessage(Utils.color(messages.coopGiven
-                    .replace("%player%", User.getUser(owner).getName())
-                    .replace("%prefix%", config.prefix)));
-            }
-        }
-        for (final @NotNull User member : getMembers()) {
-            Player pl = member.getPlayer();
-            if (pl != null) {
-                pl.sendMessage(Utils.color(messages.coopAdded
-                    .replace("%player%", User.getUser(island.getOwner()).getName())
-                    .replace("%prefix%", config.prefix)));
-            }
-        }
-        coop.add(island.id);
-        if (island.coop == null) island.coop = new HashSet<>();
-        island.coop.add(id);
-    }
-
-    public void inviteCoop(Island island) {
-        if (coopInvites == null) coopInvites = new HashSet<>();
-        coopInvites.add(island.getId());
-        for (final @NotNull User member : getMembers()) {
-            Player pl = member.getPlayer();
-            if (pl != null) {
-                BaseComponent[] components = TextComponent.fromLegacyText(Utils.color(messages.coopInvite
-                    .replace("%player%", User.getUser(island.getOwner()).getName())
-                    .replace("%prefix%", config.prefix)));
-
-                ClickEvent clickEvent = new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/is coop " + User.getUser(island.getOwner()).getName());
-                HoverEvent hoverEvent = new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("Click to coop players island!").create());
-                for (BaseComponent component : components) {
-                    component.setClickEvent(clickEvent);
-                    component.setHoverEvent(hoverEvent);
-                }
-                pl.getPlayer().spigot().sendMessage(components);
-            }
-        }
-    }
-
-    public void removeCoop(Island island) {
-        if (coop == null) coop = new HashSet<>();
-        coop.remove(island.id);
-        if (island.coop == null) island.coop = new HashSet<>();
-        island.coop.remove(id);
-        for (final @NotNull User member : island.getMembers()) {
-            Player pl = member.getPlayer();
-            if (pl != null) {
-                pl.sendMessage(Utils.color(messages.coopTaken
-                    .replace("%player%", User.getUser(owner).getName())
-                    .replace("%prefix%", config.prefix)));
-            }
-        }
-        for (final @NotNull User member : getMembers()) {
-            Player pl = member.getPlayer();
-            if (pl != null) {
-                pl.sendMessage(Utils.color(messages.coopTaken
-                    .replace("%player%", User.getUser(island.getOwner()).getName())
-                    .replace("%prefix%", config.prefix)));
-            }
-        }
-        getCoopGUI().getInventory().clear();
-        getCoopGUI().addContent();
-        island.getCoopGUI().getInventory().clear();
-        island.getCoopGUI().addContent();
-    }
-
-    public void removeCoop(int id) {
-        if (coop == null) coop = new HashSet<>();
-        coop.remove(id);
-    }
-
-    public boolean isCoop(Island island) {
-        if (coop == null) coop = new HashSet<>();
-        if (island == null) return false;
-        return coop.contains(island.id);
-    }
-
-    public Set<Integer> getCoop() {
-        if (coop == null) coop = new HashSet<>();
-        return coop;
     }
 
     public void spawnPlayers() {
@@ -1005,59 +903,116 @@ public class Island {
     }
 
 
-    // Users
-    public void addUser(@NotNull User user) {
-        final @NotNull Set<User> members = getMembers();
-        if (members.size() < upgrades.memberUpgrade.upgrades.get(memberLevel).size) {
+    // Bans
 
-            for (final @NotNull User member : members) {
-                final @Nullable Player memberPlayer = member.getPlayer();
-                if (memberPlayer == null) continue;
-                memberPlayer.sendMessage(Utils.color(messages.playerJoinedYourIsland
-                    .replace("%player%", user.getName())
-                    .replace("%prefix%", config.prefix)));
-            }
-            bans.remove(user.getPlayer());
-            user.setIslandId(id);
-            user.setRole(Role.Member);
-            user.clearInvites();
-            addMember(user);
-            teleportHome(user.getPlayer());
-            user.clearInvites();
-        } else {
-            final @Nullable Player player = user.getPlayer();
-            if (player != null)
-                player.sendMessage(Utils.color(messages.maxMemberCount
-                    .replace("%prefix%", config.prefix)));
-        }
-        getMembersGUI().getInventory().clear();
-        getMembersGUI().addContent();
+    public void addBan(@NotNull User user) {
+        if (bans == null) bans = new HashSet<>();
+        bans.add(user);
     }
 
-    public void removeUser(@NotNull User user) {
-        user.setIslandId(0);
-        final @Nullable Player player = user.getPlayer();
-        if (player != null) {
-            spawnPlayer(player);
-            player.setFlying(false);
-            player.setAllowFlight(false);
-        }
-        removeMember(user);
-        user.setRole(Role.Visitor);
-        for (final @NotNull User member : getMembers()) {
-            final @Nullable Player memberPlayer = member.getPlayer();
-            if (memberPlayer == null) continue;
+    public void removeBan(@NotNull User user) {
+        if (bans == null) bans = new HashSet<>();
+        bans.remove(user);
+    }
 
-            memberPlayer.sendMessage(Utils.color(messages.kickedMember
-                .replace("%member%", user.getName())
-                .replace("%prefix%", config.prefix)));
+    public boolean isBanned(@NotNull User user) {
+        if (bans == null) bans = new HashSet<>();
+        return bans.contains(user.getPlayer());
+    }
+
+
+    // Coop
+
+    public void addCoop(@NotNull Island island) {
+        if (coop == null) coop = new HashSet<>();
+        for (final @NotNull User member : island.getMembers()) {
+            Player pl = member.getPlayer();
+            if (pl != null) {
+                pl.sendMessage(Utils.color(messages.coopGiven
+                        .replace("%player%", User.getUser(owner).getName())
+                        .replace("%prefix%", config.prefix)));
+            }
         }
-        getMembersGUI().getInventory().clear();
-        getMembersGUI().addContent();
+        for (final @NotNull User member : getMembers()) {
+            Player pl = member.getPlayer();
+            if (pl != null) {
+                pl.sendMessage(Utils.color(messages.coopAdded
+                        .replace("%player%", User.getUser(island.getOwner()).getName())
+                        .replace("%prefix%", config.prefix)));
+            }
+        }
+        coop.add(island.id);
+        if (island.coop == null) island.coop = new HashSet<>();
+        island.coop.add(id);
+    }
+
+    public void inviteCoop(Island island) {
+        if (coopInvites == null) coopInvites = new HashSet<>();
+        coopInvites.add(island.getId());
+        for (final @NotNull User member : getMembers()) {
+            Player pl = member.getPlayer();
+            if (pl != null) {
+                BaseComponent[] components = TextComponent.fromLegacyText(Utils.color(messages.coopInvite
+                        .replace("%player%", User.getUser(island.getOwner()).getName())
+                        .replace("%prefix%", config.prefix)));
+
+                ClickEvent clickEvent = new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/is coop " + User.getUser(island.getOwner()).getName());
+                HoverEvent hoverEvent = new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("Click to coop players island!").create());
+                for (BaseComponent component : components) {
+                    component.setClickEvent(clickEvent);
+                    component.setHoverEvent(hoverEvent);
+                }
+                pl.getPlayer().spigot().sendMessage(components);
+            }
+        }
+    }
+
+    public void removeCoop(Island island) {
+        if (coop == null) coop = new HashSet<>();
+        coop.remove(island.id);
+        if (island.coop == null) island.coop = new HashSet<>();
+        island.coop.remove(id);
+        for (final @NotNull User member : island.getMembers()) {
+            Player pl = member.getPlayer();
+            if (pl != null) {
+                pl.sendMessage(Utils.color(messages.coopTaken
+                        .replace("%player%", User.getUser(owner).getName())
+                        .replace("%prefix%", config.prefix)));
+            }
+        }
+        for (final @NotNull User member : getMembers()) {
+            Player pl = member.getPlayer();
+            if (pl != null) {
+                pl.sendMessage(Utils.color(messages.coopTaken
+                        .replace("%player%", User.getUser(island.getOwner()).getName())
+                        .replace("%prefix%", config.prefix)));
+            }
+        }
+        getCoopGUI().getInventory().clear();
+        getCoopGUI().addContent();
+        island.getCoopGUI().getInventory().clear();
+        island.getCoopGUI().addContent();
+    }
+
+    public void removeCoop(int id) {
+        if (coop == null) coop = new HashSet<>();
+        coop.remove(id);
+    }
+
+    public boolean isCoop(Island island) {
+        if (coop == null) coop = new HashSet<>();
+        if (island == null) return false;
+        return coop.contains(island.id);
+    }
+
+    public Set<Integer> getCoop() {
+        if (coop == null) coop = new HashSet<>();
+        return coop;
     }
 
 
     // Entities
+
     public @NotNull Set<Entity> getEntities() {
         return getEntityUuids().stream()
             .map(Bukkit::getEntity)
@@ -1086,6 +1041,7 @@ public class Island {
 
 
     // Failed Generators
+
     public boolean isFailedGenerator(@NotNull Location location) {
         return databaseManager.isIslandFailedGenerator(this, location);
     }
@@ -1100,6 +1056,7 @@ public class Island {
 
 
     // Members
+
     public @NotNull Set<User> getMembers() {
 
     }
@@ -1114,6 +1071,7 @@ public class Island {
 
 
     // Missions
+
     public void completeMission(@NotNull String missionName) {
         missionLevels.putIfAbsent(missionName, 1);
 
@@ -1160,7 +1118,61 @@ public class Island {
     }
 
 
+    // Users
+
+    public void addUser(@NotNull User user) {
+        final @NotNull Set<User> members = getMembers();
+        if (members.size() < upgrades.memberUpgrade.upgrades.get(memberLevel).size) {
+
+            for (final @NotNull User member : members) {
+                final @Nullable Player memberPlayer = member.getPlayer();
+                if (memberPlayer == null) continue;
+                memberPlayer.sendMessage(Utils.color(messages.playerJoinedYourIsland
+                        .replace("%player%", user.getName())
+                        .replace("%prefix%", config.prefix)));
+            }
+            bans.remove(user.getPlayer());
+            user.setIslandId(id);
+            user.setRole(Role.Member);
+            user.clearInvites();
+            addMember(user);
+            teleportHome(user.getPlayer());
+            user.clearInvites();
+        } else {
+            final @Nullable Player player = user.getPlayer();
+            if (player != null)
+                player.sendMessage(Utils.color(messages.maxMemberCount
+                        .replace("%prefix%", config.prefix)));
+        }
+        getMembersGUI().getInventory().clear();
+        getMembersGUI().addContent();
+    }
+
+    public void removeUser(@NotNull User user) {
+        user.setIslandId(0);
+        final @Nullable Player player = user.getPlayer();
+        if (player != null) {
+            spawnPlayer(player);
+            player.setFlying(false);
+            player.setAllowFlight(false);
+        }
+        removeMember(user);
+        user.setRole(Role.Visitor);
+        for (final @NotNull User member : getMembers()) {
+            final @Nullable Player memberPlayer = member.getPlayer();
+            if (memberPlayer == null) continue;
+
+            memberPlayer.sendMessage(Utils.color(messages.kickedMember
+                    .replace("%member%", user.getName())
+                    .replace("%prefix%", config.prefix)));
+        }
+        getMembersGUI().getInventory().clear();
+        getMembersGUI().addContent();
+    }
+
+
     // Valuable Blocks
+
     public int getValuableBlockCountByName(@NotNull String name) {
         return valuableBlocks.getOrDefault(name, 0);
     }

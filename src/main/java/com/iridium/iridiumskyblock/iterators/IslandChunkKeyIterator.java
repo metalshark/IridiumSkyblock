@@ -19,13 +19,13 @@ public class IslandChunkKeyIterator implements Iterator<int[]> {
     private int z;
 
     public IslandChunkKeyIterator(@NotNull Island island) {
-        @NotNull final Location pos1 = island.getPos1();
-        @NotNull final Chunk pos1Chunk = pos1.getChunk();
+        final @NotNull Location pos1 = island.getPos1();
+        final @NotNull Chunk pos1Chunk = pos1.getChunk();
         minChunkX = pos1Chunk.getX();
         minChunkZ = pos1Chunk.getZ();
 
-        @NotNull final Location pos2 = island.getPos2();
-        @NotNull final Chunk pos2Chunk = pos2.getChunk();
+        final @NotNull Location pos2 = island.getPos2();
+        final @NotNull Chunk pos2Chunk = pos2.getChunk();
         maxChunkX = pos2Chunk.getX();
         maxChunkZ = pos2Chunk.getX();
 
@@ -43,7 +43,7 @@ public class IslandChunkKeyIterator implements Iterator<int[]> {
     }
 
     @Override
-    @NotNull public int[] next() {
+    public @NotNull int[] next() {
         if (x < maxChunkX) {
             x++;
         } else if (z < maxChunkZ) {
