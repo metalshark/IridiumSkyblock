@@ -6,9 +6,12 @@ import be.seeseemelk.mockbukkit.ServerMock;
 import be.seeseemelk.mockbukkit.block.BlockMock;
 import com.iridium.iridiumskyblock.Island;
 import com.iridium.iridiumskyblock.IslandConfiguration;
+import com.iridium.iridiumskyblock.User;
+import com.iridium.iridiumskyblock.enumerators.Permission;
 import com.iridium.iridiumskyblock.events.island.IslandLeavesDecayEvent;
 import com.iridium.iridiumskyblock.listeners.bukkit.LeavesDecayListener;
 import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.event.Event;
 import org.bukkit.event.block.LeavesDecayEvent;
@@ -20,6 +23,8 @@ import static org.junit.jupiter.api.Assumptions.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -36,11 +41,12 @@ class TestLeavesDecayListener {
     Island island;
     Function<Location, Island> mockGetIslandByLocation = loc -> island;
 
-    List<Event> eventsCalled;
+    List<IslandLeavesDecayEvent> eventsCalled;
     boolean cancelCalledEvent;
     Consumer<Event> mockCallEvent = calledEvent -> {
-        eventsCalled.add(calledEvent);
-        event.setCancelled(cancelCalledEvent);
+        IslandLeavesDecayEvent islandLeavesDecayEvent = (IslandLeavesDecayEvent) calledEvent;
+        eventsCalled.add(islandLeavesDecayEvent);
+        islandLeavesDecayEvent.setCancelled(cancelCalledEvent);
     };
 
     @BeforeEach
@@ -62,18 +68,24 @@ class TestLeavesDecayListener {
         MockBukkit.unmock();
     }
 
-    @DisplayName("does not cancel events outside of islands")
-    @Test
-    void testDoesNotCancelEventsOutsideOfIslands() {
-        callEvent.accept(event);
-        assertFalse(event.isCancelled());
-    }
+    @DisplayName("outside an island")
+    @Nested
+    class OutsideAnIsland {
 
-    @DisplayName("does not fire island leaves decay events outside of islands")
-    @Test
-    void testDoesNotFireLeavesDecayEventsOutsideOfIslands() {
-        callEvent.accept(event);
-        assertEquals(0, eventsCalled.size());
+        @DisplayName("does not the cancel event")
+        @Test
+        void testDoesNotCancelEvent() {
+            callEvent.accept(event);
+            assertFalse(event.isCancelled());
+        }
+
+        @DisplayName("does not fire island event")
+        @Test
+        void testDoesNotFireIslandEvent() {
+            callEvent.accept(event);
+            assertEquals(0, eventsCalled.size());
+        }
+
     }
 
     @DisplayName("when an island")
@@ -81,11 +93,13 @@ class TestLeavesDecayListener {
     class WhenAnIsland {
 
         IslandConfiguration islandConfiguration;
+        Map<World.Environment, World> worlds = new HashMap<>();
+        BiFunction<User, Permission, Boolean> isUserForbidden = (user, permission) -> true;
 
         @BeforeEach
         void setUp() {
             islandConfiguration = new IslandConfiguration();
-            island = new Island(islandConfiguration, 0, 0, 0, new HashMap<>());
+            island = new Island(islandConfiguration, 0, 0, 0, worlds, isUserForbidden);
         }
 
         @DisplayName("enables leaf decay")
@@ -97,14 +111,14 @@ class TestLeavesDecayListener {
                 islandConfiguration.setLeavesDecayEnabled(true);
             }
 
-            @DisplayName("does not cancel the leaves decay event")
+            @DisplayName("does not cancel the event")
             @Test
             void testEventCancelled() {
                 callEvent.accept(event);
                 assertFalse(event.isCancelled());
             }
 
-            @DisplayName("fires an island leaves decay event")
+            @DisplayName("fires an island event")
             @Test
             void testIslandEventFired() {
                 callEvent.accept(event);
@@ -114,7 +128,7 @@ class TestLeavesDecayListener {
                 assertEquals(island, islandEvent.getIsland());
             }
 
-            @DisplayName("relays cancellation of an island leaves decay event")
+            @DisplayName("relays cancellation of an island event")
             @Test
             void testIslandEventCancellation() {
                 cancelCalledEvent = true;

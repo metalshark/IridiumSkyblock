@@ -6,11 +6,13 @@ import lombok.Setter;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.World.Environment;
-import org.bukkit.block.Block;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Collection;
 import java.util.Map;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 
 public class Island {
 
@@ -19,21 +21,23 @@ public class Island {
     @Getter private final int z;
     @Getter @Setter private int size;
     @Getter private final @NotNull Map<Environment, World> worlds;
+    private final @NotNull BiFunction<User, Permission, Boolean> isUserForbidden;
+    private final @NotNull Function<Mission.Type, Collection<Mission.Level>> getMissionsByType;
 
     public Island(final @NotNull IslandConfiguration configuration,
                   final int x,
                   final int z,
                   final int size,
-                  final @NotNull Map<Environment, World> worlds) {
+                  final @NotNull Map<Environment, World> worlds,
+                  final @NotNull BiFunction<User, Permission, Boolean> isUserForbidden,
+                  final @NotNull Function<Mission.Type, Collection<Mission.Level>> getMissionsByType) {
         this.configuration = configuration;
         this.x = x;
         this.z = z;
         this.size = size;
         this.worlds = worlds;
-    }
-
-    public boolean getCancelBlockGrow(final @NotNull Block block) {
-        return false;
+        this.isUserForbidden = isUserForbidden;
+        this.getMissionsByType = getMissionsByType;
     }
 
     public @NotNull Location getCenter(final @NotNull World world) {
@@ -67,11 +71,23 @@ public class Island {
 
         final int blockX = location.getBlockX();
         final int blockZ = location.getBlockZ();
-        return (blockX >= getMinX() && blockX <= getMaxX() && blockZ >= getMinZ() && blockZ <= getMaxZ());
+        return (blockX >= getMinX()
+                && blockX <= getMaxX()
+                && blockZ >= getMinZ()
+                && blockZ <= getMaxZ());
     }
 
-    public boolean isUserForbidden(final @NotNull User user, final @NotNull Permission permission) {
-        return true;
+    public boolean isUserForbidden(final @NotNull User user,
+                                   final @NotNull Permission permission) {
+        return this.isUserForbidden.apply(user, permission);
+    }
+
+    public void advanceMission(final @NotNull Mission.Level level, final int amount) {
+
+    }
+
+    public @NotNull Collection<Mission.Level> getMissionsByType(final @NotNull Mission.Type type) {
+        return this.getMissionsByType.apply(type);
     }
 
 }

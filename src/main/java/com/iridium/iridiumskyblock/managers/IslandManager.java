@@ -2,7 +2,9 @@ package com.iridium.iridiumskyblock.managers;
 
 import com.iridium.iridiumskyblock.Island;
 import com.iridium.iridiumskyblock.IslandConfiguration;
+import com.iridium.iridiumskyblock.User;
 import com.iridium.iridiumskyblock.chunkgenerators.SkyblockGenerator;
+import com.iridium.iridiumskyblock.enumerators.Permission;
 import com.iridium.iridiumskyblock.iterators.IslandLocationIterator;
 import org.bukkit.block.BlockFace;
 import org.bukkit.Bukkit;
@@ -18,6 +20,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
 public class IslandManager {
@@ -46,7 +49,8 @@ public class IslandManager {
 
     public @NotNull Island createIsland(final @NotNull IslandConfiguration configuration) {
         final @NotNull Location location = nextLocation.next();
-        return new Island(configuration, location.getBlockX(), location.getBlockZ(), 50, worlds);
+        final @NotNull BiFunction<User, Permission, Boolean> isUserForbidden = (user, permission) -> false;
+        return new Island(configuration, location.getBlockX(), location.getBlockZ(), 50, worlds, isUserForbidden);
     }
 
     private @NotNull World createWorld(final @NotNull World.Environment environment,
