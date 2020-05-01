@@ -1,37 +1,40 @@
 package com.iridium.iridiumskyblock.iterators;
 
+import com.google.common.collect.ImmutableMap;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import org.bukkit.Location;
 import org.bukkit.block.BlockFace;
+import org.bukkit.util.BoundingBox;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
-public class IslandLocationIterator implements Iterator<Location> {
+public class IslandBoundingBoxIterator implements Iterator<BoundingBox> {
 
-    private static final @NotNull Map<BlockFace, BlockFace> nextDirection = Collections.unmodifiableMap(
-        new HashMap<BlockFace, BlockFace>(){{
-            put(BlockFace.NORTH, BlockFace.EAST);
-            put(BlockFace.EAST, BlockFace.SOUTH);
-            put(BlockFace.SOUTH, BlockFace.WEST);
-            put(BlockFace.WEST, BlockFace.NORTH);
-        }});
+    private static final @NotNull Map<BlockFace, BlockFace> nextDirection = ImmutableMap.<BlockFace, BlockFace>builder()
+        .put(BlockFace.NORTH, BlockFace.EAST)
+        .put(BlockFace.EAST, BlockFace.SOUTH)
+        .put(BlockFace.SOUTH, BlockFace.WEST)
+        .put(BlockFace.WEST, BlockFace.NORTH)
+        .build();
 
-    @Getter private final @NotNull Location location;
+    @Getter private final @NotNull BoundingBox boundingBox;
     @Getter private @NotNull BlockFace direction;
     @Getter private int countInDirection;
     @Getter private int maxInDirection;
 
     private final @NotNull Map<BlockFace, Vector> vectors;
 
-    public IslandLocationIterator(final int distance,
-                                  final @NotNull Location location,
-                                  final @NotNull BlockFace direction,
-                                  final int countInDirection,
-                                  final int maxInDirection) {
-        this.location = location;
+    public IslandBoundingBoxIterator(final int distance,
+                                     final @NotNull BoundingBox boundingBox,
+                                     final @NotNull BlockFace direction,
+                                     final int countInDirection,
+                                     final int maxInDirection) {
+        this.boundingBox = boundingBox;
         this.direction = direction;
         this.countInDirection = countInDirection;
         this.maxInDirection = maxInDirection;
@@ -49,9 +52,9 @@ public class IslandLocationIterator implements Iterator<Location> {
     }
 
     @Override
-    public @NotNull Location next() {
+    public @NotNull BoundingBox next() {
         final @NotNull Vector vector = vectors.get(direction);
-        location.add(vector);
+        boundingBox.shift(vector);
         countInDirection++;
 
         if (countInDirection == maxInDirection) {
@@ -62,6 +65,6 @@ public class IslandLocationIterator implements Iterator<Location> {
             }
         }
 
-        return location;
+        return boundingBox.clone();
     }
 }

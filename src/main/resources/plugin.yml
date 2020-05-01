@@ -2,13 +2,13 @@ name: ${project.name}
 version: ${project.version}
 description: ${project.description}
 author: ${author}
-depend: []
+depend: [Vault]
 api-version: 1.13
 
 main: ${mainClass}
 load: STARTUP
 
-softdepend: [WorldEdit, PlaceholderAPI, MVdWPlaceholderAPI, WildStacker, EpicSpawners, UltimateStacker, MergedSpawner, Vault, Multiverse-Core, Essentials, EssentialsChat, ChatManager, DeluxeChat]
+softdepend: [EpicSpawners, Essentials, EssentialsSpawn, MergedSpawner, MVdWPlaceholderAPI, Multiverse-Core, PlaceholderAPI, UltimateStacker, WildStacker, WorldEdit]
 commands:
   island:
     aliases: ["is", "IridiumSkyblock"]

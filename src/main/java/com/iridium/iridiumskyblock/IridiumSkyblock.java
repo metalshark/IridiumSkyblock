@@ -1,79 +1,38 @@
 package com.iridium.iridiumskyblock;
 
-import com.iridium.iridiumskyblock.listeners.bukkit.*;
-import com.iridium.iridiumskyblock.listeners.spigot.SpawnerSpawnListener;
-import com.iridium.iridiumskyblock.managers.IslandManager;
-import com.iridium.iridiumskyblock.managers.UserManager;
-import com.iridium.iridiumskyblock.utilities.MinecraftReflection;
+import com.iridium.iridiumskyblock.managers.*;
 import lombok.Getter;
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.entity.Player;
-import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
-import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.plugin.java.JavaPluginLoader;
+import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
-
-import java.io.File;
-import java.util.Arrays;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
-import java.util.function.Function;
 
 public class IridiumSkyblock extends JavaPlugin {
 
-    @Getter private MinecraftReflection minecraftReflection;
-
+    @Getter private BoostManager boostManager;
+    @Getter private DatabaseManager databaseManager;
     @Getter private IslandManager islandManager;
+    @Getter private MissionManager missionManager;
+    @Getter private ReflectionManager reflectionManager;
+    @Getter private UpgradeManager upgradeManager;
     @Getter private UserManager userManager;
+    @Getter private WorldManager worldManager;
 
     @Override
     public void onEnable() {
         super.onEnable();
 
-        minecraftReflection = new MinecraftReflection();
+        reflectionManager = new ReflectionManager();
+        databaseManager = new DatabaseManager(this);
 
-        islandManager = new IslandManager();
-        userManager = new UserManager();
+        worldManager = new WorldManager(this);
+        islandManager = new IslandManager(this);
+        userManager = new UserManager(this);
 
-        final @NotNull Consumer<Event> callEvent = Bukkit.getPluginManager()::callEvent;
-        final @NotNull Function<Location, Island> getIslandByLocation = islandManager::getIslandByLocation;
-        final @NotNull Function<Player, User> getUserByPlayer = userManager::getUserByPlayer;
-        final @NotNull BiConsumer<Runnable, Long> runTaskLater = (task, delay) ->
-            Bukkit.getScheduler().runTaskLater(this, task, delay);
-
-        Arrays.asList(
-            new BlockBreakListener(getIslandByLocation, getUserByPlayer, callEvent),
-            new BlockFormListener(getIslandByLocation),
-            new BlockFromToListener(getIslandByLocation),
-            new BlockGrowListener(getIslandByLocation),
-            new BlockPistonExtendListener(getIslandByLocation),
-            new BlockPistonRetractListener(getIslandByLocation),
-            new BlockPlaceListener(getIslandByLocation, getUserByPlayer),
-            new EntityDamageByEntityListener(getIslandByLocation, getUserByPlayer),
-            new EntityDeathListener(getIslandByLocation, getUserByPlayer),
-            new EntityExplodeListener(getIslandByLocation, minecraftReflection, runTaskLater),
-            new EntityPickupItemListener(getIslandByLocation, getUserByPlayer),
-            new EntitySpawnListener(getIslandByLocation),
-            new LeavesDecayListener(getIslandByLocation, callEvent),
-            new PlayerFishListener(getIslandByLocation, getUserByPlayer),
-            new PlayerTeleportListener(getIslandByLocation, minecraftReflection, runTaskLater, getUserByPlayer),
-            new SpawnerSpawnListener(getIslandByLocation, runTaskLater),
-            new VehicleCreateListener(getIslandByLocation),
-            new VehicleDamageListener(getIslandByLocation, getUserByPlayer, callEvent)
-        ).forEach(listener -> Bukkit.getPluginManager().registerEvents(listener, this));
-    }
-
-    @SuppressWarnings("unused")
-    public IridiumSkyblock() {
-        super();
-    }
-
-    @SuppressWarnings("unused")
-    public IridiumSkyblock(JavaPluginLoader loader, PluginDescriptionFile description, File dataFolder, File file) {
-        super(loader, description, dataFolder, file);
+        missionManager = new MissionManager(this);
+        upgradeManager = new UpgradeManager(this);
+        boostManager = new BoostManager(this);
     }
 
     @Override
@@ -85,6 +44,10 @@ public class IridiumSkyblock extends JavaPlugin {
 
     public static IridiumSkyblock getPlugin() {
         return getPlugin(IridiumSkyblock.class);
+    }
+
+    public @NotNull BukkitTask runTaskLater(final @NotNull Runnable task, final long delay) {
+        return Bukkit.getScheduler().runTaskLater(this, task, delay);
     }
 
 }
