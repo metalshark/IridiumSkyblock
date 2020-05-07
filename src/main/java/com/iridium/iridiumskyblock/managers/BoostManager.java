@@ -28,7 +28,7 @@ public class BoostManager implements Listener {
     @EventHandler(ignoreCancelled = true)
     public void onBlockGrow(final @NotNull BlockGrowEvent event) {
         final @Nullable Block block = event.getBlock();
-        final @Nullable Island island = plugin.getIslandManager().getIslandByLocation(block.getLocation());
+        final @Nullable Island island = plugin.getDatabaseManager().getIslandByLocation(block.getLocation());
         if (island == null) return;
 
         final @Nullable Boost boost = plugin.getDatabaseManager().getIslandBoostByType(island, Boost.Type.FARMING);
@@ -41,7 +41,7 @@ public class BoostManager implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     public void onPlayerExpChange(final @NotNull PlayerExpChangeEvent event) {
-        final @Nullable Island island = plugin.getIslandManager().getIslandByLocation(event.getPlayer().getLocation());
+        final @Nullable Island island = plugin.getDatabaseManager().getIslandByLocation(event.getPlayer().getLocation());
         if (island == null) return;
 
         final @Nullable Boost boost = plugin.getDatabaseManager().getIslandBoostByType(island, Boost.Type.EXPERIENCE);
@@ -52,7 +52,7 @@ public class BoostManager implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     public void onSpawnerSpawn(final @NotNull SpawnerSpawnEvent event) {
-        final @Nullable Island island = plugin.getIslandManager().getIslandByLocation(event.getLocation());
+        final @Nullable Island island = plugin.getDatabaseManager().getIslandByLocation(event.getLocation());
         if (island == null) return;
 
         final @Nullable Boost boost = plugin.getDatabaseManager().getIslandBoostByType(island, Boost.Type.SPAWNER);

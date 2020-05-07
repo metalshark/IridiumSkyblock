@@ -2,14 +2,14 @@ name: ${project.name}
 version: ${project.version}
 description: ${project.description}
 author: ${author}
-depend: [Vault]
+depend: [ProtocolLib, Vault, WorldEdit]
 api-version: 1.13
 
 main: ${mainClass}
 load: STARTUP
 
-softdepend: [EpicSpawners, Essentials, EssentialsSpawn, MergedSpawner, MVdWPlaceholderAPI, Multiverse-Core, PlaceholderAPI, UltimateStacker, WildStacker, WorldEdit]
+softdepend: [AdvancedSpawners, EpicSpawners, Essentials, EssentialsSpawn, MergedSpawner, Multiverse-Core, MVdWPlaceholderAPI, PlaceholderAPI, UltimateStacker, WildStacker, WorldEdit]
 commands:
   island:
-    aliases: ["is", "IridiumSkyblock"]
+    aliases: ["is", "${project.name}"]
     description: Main plugin command

@@ -20,7 +20,7 @@ public class SkyblockGenerator extends ChunkGenerator {
     private final @NotNull Map<Environment, Biome> biomes;
 
     public SkyblockGenerator() {
-        this.biomes =  Collections.unmodifiableMap(
+        this.biomes = Collections.unmodifiableMap(
             new HashMap<Environment, Biome>(){{
                 put(Environment.NORMAL, Biome.PLAINS);
                 put(Environment.NETHER, Biome.NETHER);
@@ -41,13 +41,10 @@ public class SkyblockGenerator extends ChunkGenerator {
         final @Nullable Biome biome = biomes.get(world.getEnvironment());
         if (biome == null) return chunkData;
 
-        IntStream.range(0, 15).forEach(x -> {
-            IntStream.range(0, world.getMaxHeight()).forEach(y -> {
-                IntStream.range(0, 15).forEach(z -> {
-                    biomeGrid.setBiome(x, y, z, biome);
-                });
-            });
-        });
+        IntStream.range(0, 15).parallel().forEach(x ->
+            IntStream.range(0, world.getMaxHeight()).parallel().forEach(y ->
+                IntStream.range(0, 15).parallel().forEach(z ->
+                    biomeGrid.setBiome(x, y, z, biome))));
 
         return chunkData;
     }

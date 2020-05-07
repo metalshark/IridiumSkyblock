@@ -1,9 +1,10 @@
 package com.iridium.iridiumskyblock.managers;
 
-import com.google.common.collect.ImmutableMap;
 import com.iridium.iridiumskyblock.*;
 import lombok.RequiredArgsConstructor;
+import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -15,18 +16,43 @@ public class DatabaseManager {
 
     private final @NotNull IridiumSkyblock plugin;
 
-    public @NotNull Map<World.Environment, @NotNull String> getWorldNames() {
-        return new ImmutableMap.Builder<World.Environment, @NotNull String>()
-            .put(World.Environment.NORMAL, plugin.getName())
-            .put(World.Environment.NETHER, plugin.getName() + "_nether")
-            .build();
-    }
 
-    public @Nullable Boost getIslandBoostByType(final @NotNull Island island, final @NotNull Boost.Type type) {
+    // Worlds
+    public @NotNull Map<World.Environment, @NotNull String> getWorldNames() {
         throw new UnsupportedOperationException();
     }
 
+
+    // Islands
+    public @Nullable Island getIslandByName(final @NotNull String name) {
+        throw new UnsupportedOperationException();
+    }
+
+    public @Nullable Island getIslandByLocation(final @NotNull Location location) {
+        throw new UnsupportedOperationException();
+    }
+
+    public void addOrUpdateIsland(final @NotNull Island island) {
+        throw new UnsupportedOperationException();
+    }
+
+
+    // Users
+    public @Nullable User getUserByPlayer(final @NotNull Player player) {
+        throw new UnsupportedOperationException();
+    }
+
+    public boolean isUserForbidden(final @NotNull Island island, final @NotNull User user, final @NotNull User.Permission permission) {
+        throw new UnsupportedOperationException();
+    }
+
+
+    // Boosts
     public void addIslandBoost(final @NotNull Island island, final @NotNull Boost boost) {
+        throw new UnsupportedOperationException();
+    }
+
+    public @Nullable Boost getIslandBoostByType(final @NotNull Island island, final @NotNull Boost.Type type) {
         throw new UnsupportedOperationException();
     }
 
@@ -34,11 +60,9 @@ public class DatabaseManager {
         throw new UnsupportedOperationException();
     }
 
-    public @NotNull Collection<Mission.Level> getIslandMissionsByType(final @NotNull Island island, final @NotNull Mission.Type type) {
-        throw new UnsupportedOperationException();
-    }
 
-    public boolean isUserForbidden(final @NotNull Island island, final @NotNull User user, final @NotNull User.Permission permission) {
+    // Missions
+    public @NotNull Collection<Mission.Level> getIslandMissionsByType(final @NotNull Island island, final @NotNull Mission.Type type) {
         throw new UnsupportedOperationException();
     }
 

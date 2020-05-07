@@ -63,7 +63,7 @@ public class MissionManager implements Listener {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onBlockBreak(final @NotNull BlockBreakEvent event) {
         final @NotNull Block block = event.getBlock();
-        final @Nullable Island island = plugin.getIslandManager().getIslandByLocation(block.getLocation());
+        final @Nullable Island island = plugin.getDatabaseManager().getIslandByLocation(block.getLocation());
         if (island == null) return;
 
         plugin.getDatabaseManager().getIslandMissionsByType(island, Mission.Type.BLOCK_BREAK).stream()
@@ -74,7 +74,7 @@ public class MissionManager implements Listener {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onBlockPlace(final @NotNull BlockPlaceEvent event) {
         final @NotNull Block block = event.getBlock();
-        final @Nullable Island island = plugin.getIslandManager().getIslandByLocation(block.getLocation());
+        final @Nullable Island island = plugin.getDatabaseManager().getIslandByLocation(block.getLocation());
         if (island == null) return;
 
         plugin.getDatabaseManager().getIslandMissionsByType(island, Mission.Type.BLOCK_PLACE).stream()
@@ -85,7 +85,7 @@ public class MissionManager implements Listener {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onEntityDeath(final @NotNull EntityDeathEvent event) {
         final @NotNull LivingEntity entity = event.getEntity();
-        final @Nullable Island island = plugin.getIslandManager().getIslandByLocation(entity.getLocation());
+        final @Nullable Island island = plugin.getDatabaseManager().getIslandByLocation(entity.getLocation());
         if (island == null) return;
 
         plugin.getDatabaseManager().getIslandMissionsByType(island, Mission.Type.ENTITY_KILL).stream()
@@ -103,7 +103,7 @@ public class MissionManager implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPlayerExpChange(final @NotNull PlayerExpChangeEvent event) {
-        final @Nullable Island island = plugin.getIslandManager().getIslandByLocation(event.getPlayer().getLocation());
+        final @Nullable Island island = plugin.getDatabaseManager().getIslandByLocation(event.getPlayer().getLocation());
         if (island == null) return;
 
         final int amount = event.getAmount();
@@ -113,7 +113,7 @@ public class MissionManager implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPlayerFish(final @NotNull PlayerFishEvent event) {
-        final @Nullable Island island = plugin.getIslandManager().getIslandByLocation(event.getPlayer().getLocation());
+        final @Nullable Island island = plugin.getDatabaseManager().getIslandByLocation(event.getPlayer().getLocation());
         if (island == null) return;
 
         if (event.getState() != PlayerFishEvent.State.CAUGHT_FISH) return;
