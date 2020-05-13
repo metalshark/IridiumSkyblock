@@ -12,7 +12,9 @@ import java.util.Random;
 
 class SkyblockGenerator extends ChunkGenerator {
 
-    public byte[][] blockSections;
+
+// BLAH
+        public byte[][] blockSections;
 
     @Override
     public ChunkData generateChunkData(World world, Random random, int cx, int cz, BiomeGrid biomeGrid) {
